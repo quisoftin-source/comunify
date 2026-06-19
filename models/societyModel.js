@@ -70,6 +70,10 @@ const societySchema = mongoose.Schema(
                 type: String,
                 required: true
             },
+            state: {
+                type: String,
+                required: true
+            },
             postalCode: {
                 type: Number,
                 required: true

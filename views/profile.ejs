@@ -58,8 +58,8 @@
                             <strong><%= society.societyAddress.address %></strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
-                            <span class="text-muted">City / District:</span>
-                            <strong><%= society.societyAddress.city %>, <%= society.societyAddress.district %></strong>
+                            <span class="text-muted">City / District / State:</span>
+                            <strong><%= society.societyAddress.city %>, <%= society.societyAddress.district %>, <%= society.societyAddress.state || '' %></strong>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span class="text-muted">Postal Code:</span>

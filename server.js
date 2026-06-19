@@ -471,6 +471,7 @@ function registerRoutes() {
                             address: req.body.address,
                             city: req.body.city,
                             district: req.body.district,
+                            state: req.body.state,
                             postalCode: req.body.postalCode
                         }
                     }}
@@ -2979,6 +2980,7 @@ function registerRoutes() {
                         address: req.body.address,
                         city: req.body.city,
                         district: req.body.district,
+                        state: req.body.state,
                         postalCode: req.body.postalCode
                     },
                     admin: req.body.username,

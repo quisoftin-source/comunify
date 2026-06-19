@@ -73,7 +73,8 @@ async function seedSystemData() {
             societyAddress: {
                 address: "4, Vittal Mallya Road",
                 city: "Bangalore",
-                district: "Karnataka",
+                district: "Bangalore",
+                state: "Karnataka",
                 postalCode: 560001
             },
             admin: adminEmail,
