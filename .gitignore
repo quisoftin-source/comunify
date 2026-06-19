@@ -1,14 +1,14 @@
 node_modules
 .env
-.env
+.env*
 password.txt
+password/
+password/*.txt
 NODE_ENV
 comunify@*
 
-.env
-password.txt
-NODE_ENV
-comunify@*
-password/
-password/*.txt
-password.txt
+# Diagnostic Connection & Access Logs
+*.log
+traffic.log
+logs/
+*.dump

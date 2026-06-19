@@ -152,7 +152,7 @@ db.connectDB().then(async () => {
         return 'Unknown Location';
     }
 
-    async function logTraffic(req) {
+    async function logTraffic(req, res) {
         const pathName = req.path;
         // Skip static assets and common file types to keep logs clean
         const isStatic = pathName.includes('.') && 
@@ -161,12 +161,16 @@ db.connectDB().then(async () => {
         const isImageOrUpload = pathName.startsWith('/images/') || 
                                 pathName.startsWith('/uploads/');
         
-        if (req.method !== 'GET' || isStatic || isImageOrUpload) {
+        if (isStatic || isImageOrUpload) {
             return;
         }
         
         try {
-            const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+            // Extract the first IP from X-Forwarded-For comma-separated list if present
+            const rawIp = (req.headers['x-forwarded-for'] ? req.headers['x-forwarded-for'].split(',')[0].trim() : null) || 
+                          req.socket.remoteAddress || 
+                          req.ip;
+            
             // Clean up loopback address representation
             let ip = rawIp || 'Unknown IP';
             if (ip === '::1' || ip.includes('::ffff:127.0.0.1')) {
@@ -179,17 +183,30 @@ db.connectDB().then(async () => {
             
             const timestamp = new Date().toISOString();
             const userStr = req.user ? `User: ${req.user.username}` : 'User: Guest';
-            const logEntry = `[${timestamp}] IP: ${ip} | Location: ${location} | OS: ${deviceDetails.os} | Browser: ${deviceDetails.browser} | Device: ${deviceDetails.device} | ${userStr} | Path: ${req.originalUrl || pathName}\n`;
+            const method = req.method || 'GET';
+            const status = res ? res.statusCode : 200;
             
-            const logPath = path.join(__dirname, 'traffic.log');
-            await fs.promises.appendFile(logPath, logEntry, 'utf8');
+            // Log entry containing strictly transport metadata (No credential parameters)
+            const logEntry = `[${timestamp}] IP: ${ip} | Location: ${location} | OS: ${deviceDetails.os} | Browser: ${deviceDetails.browser} | Device: ${deviceDetails.device} | ${userStr} | Method: ${method} | Path: ${req.originalUrl || pathName} | Status: ${status}\n`;
+            
+            const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
+            if (isProduction) {
+                // Cloud environment: route exclusively to stdout
+                process.stdout.write(logEntry);
+            } else {
+                // Local environment: write to local traffic.log
+                const logPath = path.join(__dirname, 'traffic.log');
+                await fs.promises.appendFile(logPath, logEntry, 'utf8');
+            }
         } catch (e) {
             console.error("Traffic logging error:", e);
         }
     }
 
     app.use((req, res, next) => {
-        logTraffic(req).catch(err => console.error("Traffic logging background task failed:", err));
+        res.on('finish', () => {
+            logTraffic(req, res).catch(err => console.error("Traffic logging background task failed:", err));
+        });
         next();
     });
 
@@ -640,21 +657,29 @@ function registerRoutes() {
         const prompt = rawPrompt.toLowerCase().trim();
         let subject = "";
         let details = "";
+        let subjectGuj = "";
+        let detailsGuj = "";
 
         const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
         if (prompt.startsWith('dear') || prompt.length > 100) {
             // It's already a full notice or a very long custom text, keep it exactly as is!
             details = rawPrompt;
+            detailsGuj = "કૃપા કરીને ઉપર દર્શાવેલ અંગ્રેજી જાહેરાત વાંચો.";
+            
             // Generate a subject based on keywords
             if (prompt.includes('water')) {
                 subject = "Water Supply Disruption Notice";
+                subjectGuj = "પાણી પુરવઠામાં વિક્ષેપ અંગેની સૂચના";
             } else if (prompt.includes('lift') || prompt.includes('elevator')) {
                 subject = "Elevator Maintenance Notice";
+                subjectGuj = "લિફ્ટ જાળવણી અંગેની સૂચના";
             } else if (prompt.includes('agm') || prompt.includes('meeting') || prompt.includes('general')) {
                 subject = "Official Announcement: Annual General Meeting (AGM)";
+                subjectGuj = "સત્તાવાર જાહેરાત: વાર્ષિક સાધારણ સભા (AGM)";
             } else {
                 subject = "Important Society Notice";
+                subjectGuj = "મહત્વપૂર્ણ સોસાયટી સૂચના";
             }
         } else {
             // Extract times (e.g. "1:00 PM to 3:00 PM", "10am - 2pm", "1pm - 3pm")
@@ -675,38 +700,57 @@ function registerRoutes() {
             const otherLiftMatch = rawPrompt.match(/\buse\s+(lift\s+[a-zA-Z0-9]|elevator\s+[a-zA-Z0-9])\b/i);
             const altLiftName = otherLiftMatch ? capitalize(otherLiftMatch[1]) : (liftName.toLowerCase().includes('lift a') ? 'Lift B' : 'Lift A');
 
+            // Gujarati translations for helper items
+            let dateStrGuj = dateStr;
+            if (dateStr.toLowerCase() === 'tomorrow') dateStrGuj = 'આવતીકાલે';
+            if (dateStr.toLowerCase() === 'today') dateStrGuj = 'આજે';
+
             if (prompt.includes('water')) {
                 subject = "Water Supply Disruption Notice";
+                subjectGuj = "પાણી પુરવઠામાં વિક્ષેપ અંગેની સૂચના";
                 const timePeriod = timeStr ? `from ${timeStr.replace(/from\s+/i, '')}` : "from 10:00 AM to 02:00 PM";
+                const timePeriodGuj = timeStr ? `${timeStr.replace(/from\s+/i, '')}` : "સવારે ૧૦:૦૦ થી બપોરે ૦૨:૦૦";
                 const reasonMatch = rawPrompt.match(/(?:due to|for)\s+([^.]+)/i);
                 const reason = reasonMatch ? reasonMatch[1].trim() : "scheduled maintenance and tank cleaning";
+                const reasonGuj = reason.toLowerCase().includes('repairs') ? "પાઇપ રિપેરિંગ અને જાળવણી" : "સુનિશ્ચિત જાળવણી અને ટાંકી સફાઈ";
                 
                 details = `Dear Residents,\n\nPlease note that there will be a temporary water supply shutdown ${dateStr} ${timePeriod} due to ${reason}.\n\nPlease store sufficient water in advance to avoid inconvenience. We regret the disruption.\n\nManagement Office`;
+                detailsGuj = `પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નોંધો કે ${reasonGuj} ના કારણે ${dateStrGuj} ${timePeriodGuj} દરમિયાન કામચલાઉ પાણી પુરવઠો બંધ રહેશે.\n\nકૃપા કરીને અસુવિધા ટાળવા માટે અગાઉથી પૂરતું પાણી સંગ્રહિત કરો. અમને કોઈ પણ અસુવિધા બદલ ખેદ છે.\n\nમેનેજમેન્ટ ઓફિસ`;
             } 
             else if (prompt.includes('agm') || prompt.includes('meeting') || prompt.includes('general')) {
                 subject = "Official Announcement: Annual General Meeting (AGM)";
+                subjectGuj = "સત્તાવાર જાહેરાત: વાર્ષિક સાધારણ સભા (AGM)";
                 const locationMatch = rawPrompt.match(/(?:at|in|inside)\s+the\s+([^.]+)/i);
                 const location = locationMatch ? locationMatch[1].trim() : "the Clubhouse";
+                const locationGuj = location.toLowerCase().includes('clubhouse') ? "ક્લબહાઉસ" : "સોસાયટી કોમન હોલ";
                 const timePeriod = timeStr ? `at ${timeStr.replace(/at\s+/i, '')}` : "at 10:30 AM";
+                const timePeriodGuj = timeStr ? `${timeStr.replace(/at\s+/i, '')}` : "સવારે ૧૦:૩૦ વાગ્યે";
                 
                 details = `Dear Members,\n\nYou are cordially invited to the Annual General Meeting (AGM) of the society, scheduled for ${dateStr} ${timePeriod} in ${location}.\n\nAgenda:\n1. Approval of annual audited ledger and balance sheets\n2. Capital expenditure approvals (Tower Painting project)\n3. Election of tower representatives\n\nPlease ensure your presence. Lunch will be served post-adjournment.\n\nManagement Committee`;
+                detailsGuj = `પ્રિય સભ્યો,\n\nતમને સોસાયટીની વાર્ષિક સાધારણ સભા (AGM) માં હાજર રહેવા માટે હાર્દિક આમંત્રણ છે, જે ${dateStrGuj} ${timePeriodGuj} દરમિયાન ${locationGuj} માં યોજાશે.\n\nકાર્યસૂચિ:\n૧. વાર્ષિક ઓડિટેડ ખાતાવહી અને બેલેન્સ શીટની મંજૂરી\n૨. મૂડી ખર્ચ મંજૂરીઓ (ટાવર પેઇન્ટિંગ પ્રોજેક્ટ)\n૩. ટાવર પ્રતિનિધિઓની ચૂંટણી\n\nકૃપા કરીને તમારી હાજરી સુનિશ્ચિત કરો. સભાની પૂર્ણાહુતિ પછી ભોજન પીરસવામાં આવશે.\n\nમેનેજમેન્ટ કમિટી`;
             } 
             else if (prompt.includes('lift') || prompt.includes('elevator')) {
                 subject = `${liftName} Maintenance Notice`;
+                subjectGuj = `${liftName} જાળવણી અંગેની સૂચના`;
                 const timePeriod = timeStr ? `from ${timeStr.replace(/from\s+/i, '')}` : "from 01:00 PM to 03:00 PM";
+                const timePeriodGuj = timeStr ? `${timeStr.replace(/from\s+/i, '')}` : "બપોરે ૦૧:૦૦ થી ૦૩:૦૦";
                 const reasonMatch = rawPrompt.match(/(?:due to|for)\s+([^.]+)/i);
                 const reason = reasonMatch ? reasonMatch[1].trim() : "scheduled AMC safety checks and cleaning";
+                const reasonGuj = reason.toLowerCase().includes('safety checks') ? "સુનિશ્ચિત જાળવણી સુરક્ષા તપાસ અને સફાઈ" : "સામાન્ય સમારકામ અને જાળવણી";
                 
                 details = `Dear Residents,\n\nPlease note that ${liftName} will be shut down ${dateStr} ${timePeriod} due to ${reason}.\n\nPlease use ${altLiftName} during this period.\n\nManagement Office`;
+                detailsGuj = `પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નોંધો કે ${reasonGuj} ના કારણે ${dateStrGuj} ${timePeriodGuj} દરમિયાન ${liftName} બંધ રહેશે.\n\nકૃપા કરીને આ સમયગાળા દરમિયાન ${altLiftName} નો ઉપયોગ કરો.\n\nમેનેજમેન્ટ ઓફિસ`;
             }
             else {
                 subject = "Important Society Notice";
+                subjectGuj = "મહત્વપૂર્ણ સોસાયટી સૂચના";
                 const firstCharCap = capitalize(rawPrompt);
                 details = `Dear Residents,\n\nPlease note the following official announcement:\n\n${firstCharCap}.\n\nFor details, contact the society office.\n\nManagement Office`;
+                detailsGuj = `પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નીચેની સત્તાવાર જાહેરાતની નોંધ લો:\n\n${firstCharCap}.\n\nવધુ વિગતો માટે, સોસાયટી ઓફિસનો સંપર્ક કરો.\n\nમેનેજમેન્ટ ઓફિસ`;
             }
         }
 
-        res.json({ success: true, subject, details });
+        res.json({ success: true, subject, details, subjectGuj, detailsGuj });
     });
 
     // LOCAL PAYMENT SIMULATOR

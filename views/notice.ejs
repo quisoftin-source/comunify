@@ -11,20 +11,46 @@
 
     <div class="row">
         <!-- Manual Notice Creator -->
-        <div class="col-md-7">
+        <div class="col-md-8">
             <div class="panel panel-default">
                 <div class="panel-heading"><h4><i class="fas fa-edit"></i> Draft Notice Announcement</h4></div>
                 <div class="panel-body">
                     <form action="/notice" method="POST" id="noticeForm">
-                        <div class="form-group">
-                            <label for="noticeSubject">Subject Header:</label>
-                            <input name="subject" class="form-control" type="text" id="noticeSubject" placeholder="e.g. Schedule Maintenance Shutdown" required>
+                        <!-- Dual Language inputs merged on submit -->
+                        <input type="hidden" name="subject" id="finalSubject">
+                        <input type="hidden" name="details" id="finalDetails">
+
+                        <div class="row">
+                            <!-- English Notice Column -->
+                            <div class="col-sm-6" style="border-right: 1px solid rgba(255,255,255,0.08);">
+                                <h5 style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 12px;"><i class="fas fa-flag-usa"></i> English Version</h5>
+                                <div class="form-group">
+                                    <label for="noticeSubjectEng">Subject Header (English):</label>
+                                    <input class="form-control" type="text" id="noticeSubjectEng" placeholder="e.g. Schedule Maintenance Shutdown" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+                                </div>
+                                <div class="form-group">
+                                    <label for="noticeDetailsEng">Announcement Details (English):</label>
+                                    <textarea class="form-control" rows="8" id="noticeDetailsEng" placeholder="Type notice details here..." required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Gujarati Notice Column -->
+                            <div class="col-sm-6">
+                                <h5 style="color: #ff9800; font-weight: bold; margin-bottom: 12px;"><i class="fas fa-language"></i> Gujarati Version (ગુજરાતી આવૃત્તિ)</h5>
+                                <div class="form-group">
+                                    <label for="noticeSubjectGuj">Subject Header (Gujarati):</label>
+                                    <input class="form-control" type="text" id="noticeSubjectGuj" placeholder="દા.ત. પાણી પુરવઠો બંધ રાખવા અંગે" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+                                </div>
+                                <div class="form-group">
+                                    <label for="noticeDetailsGuj">Announcement Details (Gujarati):</label>
+                                    <textarea class="form-control" rows="8" id="noticeDetailsGuj" placeholder="સૂચનાની વિગતો અહીં લખો..." required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="noticeDetails">Announcement Details:</label>
-                            <textarea name="details" class="form-control" rows="8" id="noticeDetails" placeholder="Type notice details here..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Publish Notice</button>
+
+                        <hr style="border-color: var(--border-glass); margin-top: 20px; margin-bottom: 20px;">
+
+                        <button type="submit" class="btn btn-warning"><i class="fas fa-check"></i> Publish Notice</button>
                         <a href="/noticeboard" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
@@ -32,7 +58,7 @@
         </div>
 
         <!-- AI Notice Generator Panel -->
-        <div class="col-md-5">
+        <div class="col-md-4">
             <div class="panel panel-default" style="border-left: 4px solid var(--accent-cyan) !important;">
                 <div class="panel-heading"><h4><i class="fas fa-robot"></i> AI Notice Generator</h4></div>
                 <div class="panel-body">
@@ -61,6 +87,24 @@
 </div>
 
 <script>
+    // Form merge script on submission
+    document.getElementById('noticeForm').addEventListener('submit', function(e) {
+        const subEng = document.getElementById('noticeSubjectEng').value.trim();
+        const subGuj = document.getElementById('noticeSubjectGuj').value.trim();
+        const detEng = document.getElementById('noticeDetailsEng').value.trim();
+        const detGuj = document.getElementById('noticeDetailsGuj').value.trim();
+        
+        // Subject: "English Subject / Gujarati Subject"
+        document.getElementById('finalSubject').value = subEng + " / " + subGuj;
+        
+        // Details: Split sequential structure formatted cleanly
+        document.getElementById('finalDetails').value = "---\n" + 
+            subEng.toUpperCase() + "\n" + 
+            detEng + "\n\n" + 
+            subGuj + "\n" + 
+            detGuj + "\n---";
+    });
+
     function generateNotice() {
         const prompt = document.getElementById('aiPrompt').value.trim();
         if (!prompt) {
@@ -71,15 +115,50 @@
         const generatingText = document.getElementById('aiGeneratingText');
         generatingText.style.display = 'block';
 
-        $.post('/notice/ai-generate', { prompt: prompt }, function(data) {
-            generatingText.style.display = 'none';
-            if (data.success) {
-                document.getElementById('noticeSubject').value = data.subject;
-                document.getElementById('noticeDetails').value = data.details;
-            } else {
-                alert('AI Notice Generation failed. Please try again.');
-            }
-        });
+        $.post('/notice/ai-generate', { prompt: prompt })
+            .done(function(data) {
+                generatingText.style.display = 'none';
+                if (data.success) {
+                    document.getElementById('noticeSubjectEng').value = data.subject || '';
+                    document.getElementById('noticeDetailsEng').value = data.details || '';
+                    document.getElementById('noticeSubjectGuj').value = data.subjectGuj || '';
+                    document.getElementById('noticeDetailsGuj').value = data.detailsGuj || '';
+                } else {
+                    alert('AI Notice Generation failed: ' + (data.reply || 'Unknown error'));
+                }
+            })
+            .fail(function(xhr, status, error) {
+                generatingText.style.display = 'none';
+                alert('Network or server error during AI notice generation. Using client fallback formatter.');
+                
+                const cleanPrompt = prompt.toLowerCase();
+                let subEng = "Important Society Notice";
+                let subGuj = "મહત્વપૂર્ણ સોસાયટી સૂચના";
+                let detEng = "Dear Residents,\n\nPlease note the following official announcement:\n\n" + prompt + ".\n\nFor details, contact the society office.\n\nManagement Office";
+                let detGuj = "પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નીચેની સત્તાવાર જાહેરાતની નોંધ લો:\n\n" + prompt + ".\n\nવધુ વિગતો માટે, સોસાયટી ઓફિસનો સંપર્ક કરો.\n\nમેનેજમેન્ટ ઓફિસ";
+                
+                if (cleanPrompt.includes('water')) {
+                    subEng = "Water Supply Disruption Notice";
+                    subGuj = "પાણી પુરવઠામાં વિક્ષેપ અંગેની સૂચના";
+                    detEng = "Dear Residents,\n\nPlease note that there will be a temporary water supply shutdown tomorrow from 10:00 AM to 02:00 PM due to maintenance.\n\nPlease store sufficient water in advance to avoid inconvenience. We regret the disruption.\n\nManagement Office";
+                    detGuj = "પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નોંધો કે સમારકામ કામગીરીને કારણે આવતીકાલે સવારે ૧૦:૦૦ થી બપોરે ૦૨:૦૦ દરમિયાન કામચલાઉ પાણી પુરવઠો બંધ રહેશે.\n\nકૃપા કરીને અસુવિધા ટાળવા માટે અગાઉથી પૂરતું પાણી સંગ્રહિત કરો. અમને વિક્ષેપ બદલ ખેદ છે.\n\nમેનેજમેન્ટ ઓફિસ";
+                } else if (cleanPrompt.includes('agm') || cleanPrompt.includes('meeting')) {
+                    subEng = "Official Announcement: Annual General Meeting (AGM)";
+                    subGuj = "સત્તાવાર જાહેરાત: વાર્ષિક સાધારણ સભા (AGM)";
+                    detEng = "Dear Members,\n\nYou are cordially invited to the Annual General Meeting (AGM) of the society, scheduled for next Sunday at 10:30 AM in the Clubhouse.\n\nPlease ensure your presence.\n\nManagement Committee";
+                    detGuj = "પ્રિય સભ્યો,\n\nતમને સોસાયટીની વાર્ષિક સાધારણ સભા (AGM) માં હાજર રહેવા માટે હાર્દિક આમંત્રણ છે, જે આગામી રવિવારે સવારે ૧૦:૩૦ વાગ્યે ક્લબહાઉસ ખાતે યોજાશે.\n\nકૃપા કરીને તમારી હાજરી સુનિશ્ચિત કરો.\n\nમેનેજમેન્ટ કમિટી";
+                } else if (cleanPrompt.includes('lift') || cleanPrompt.includes('elevator')) {
+                    subEng = "Elevator Maintenance Notice";
+                    subGuj = "લિફ્ટ જાળવણી અંગેની સૂચના";
+                    detEng = "Dear Residents,\n\nPlease note that the lift will be temporarily shut down tomorrow from 01:00 PM to 03:00 PM due to scheduled cleaning.\n\nPlease use alternative staircases or lift during this period.\n\nManagement Office";
+                    detGuj = "પ્રિય રહેવાસીઓ,\n\nકૃપા કરીને નોંધો કે સફાઈ કામગીરીને કારણે લિફ્ટ આવતીકાલે બપોરે ૦૧:૦૦ થી ૦૩:૦૦ દરમિયાન અસ્થાયી રૂપે બંધ રહેશે.\n\nકૃપા કરીને અસુવિધા ટાળવા વૈકલ્પિક સીડીનો ઉપયોગ કરો.\n\nમેનેજમેન્ટ ઓફિસ";
+                }
+                
+                document.getElementById('noticeSubjectEng').value = subEng;
+                document.getElementById('noticeDetailsEng').value = detEng;
+                document.getElementById('noticeSubjectGuj').value = subGuj;
+                document.getElementById('noticeDetailsGuj').value = detGuj;
+            });
     }
 </script>
 
