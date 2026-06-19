@@ -49,6 +49,21 @@ async function seedSystemData() {
         await Society.deleteMany({});
         console.log("Cleared User and Society collections for a clean seed.");
 
+        // Helper to register user resiliently (ignoring duplicates)
+        async function registerUserResilient(userObj, password) {
+            try {
+                return await User.register(userObj, password);
+            } catch (err) {
+                if (err.name === 'UserExistsError' || err.code === 11000) {
+                    console.log(`[SEED WARN] User already exists: ${userObj.username}`);
+                    return await User.findOne({ username: userObj.username });
+                } else {
+                    throw err;
+                }
+            }
+        }
+
+
         const dir = path.join(__dirname, '../password');
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
@@ -70,7 +85,7 @@ async function seedSystemData() {
         // 1. Seed Global Super Admin
         const superAdminEmail = 'quisoft.in@gmail.com';
         const superAdminPass = 'admin123';
-        await User.register({
+        await registerUserResilient({
             username: superAdminEmail,
             firstName: 'System',
             lastName: 'SuperAdmin',
@@ -81,6 +96,7 @@ async function seedSystemData() {
             societyName: 'System',
             flatNumber: 'System'
         }, superAdminPass);
+
         logCredentials('super_admin (global)', superAdminEmail, superAdminPass, 'System');
         console.log('Seeded Global Super Admin user');
 
@@ -93,7 +109,7 @@ async function seedSystemData() {
         ];
 
         for (const dr of demoRoles) {
-            await User.register({
+            await registerUserResilient({
                 username: dr.email,
                 firstName: 'Demo',
                 lastName: dr.role.replace('_', ' ').toUpperCase(),
@@ -106,6 +122,7 @@ async function seedSystemData() {
             }, 'demo');
             logCredentials(`demo_${dr.role}`, dr.email, 'demo', dr.societyName);
         }
+
         console.log('Seeded Universal Demo Users');
 
         // 30 Premium Societies List
@@ -191,7 +208,16 @@ async function seedSystemData() {
                     }
                 ]
             });
-            await soc.save();
+            try {
+                await soc.save();
+            } catch (err) {
+                if (err.code === 11000) {
+                    console.log(`[SEED WARN] Society already exists: ${ls.name}`);
+                } else {
+                    throw err;
+                }
+            }
+
             console.log(`Seeded Luxury Society: ${ls.name}`);
 
             // Fetch tenant models
@@ -231,7 +257,7 @@ async function seedSystemData() {
 
             // Register these roles in the main User collection
             // A. Super Admin associated with society (System management perspective)
-            await User.register({
+            await registerUserResilient({
                 username: roleSuperAdminEmail,
                 firstName: nameSuper.firstName,
                 lastName: nameSuper.lastName + " (Super)",
@@ -245,7 +271,7 @@ async function seedSystemData() {
             logCredentials('Super Admin', roleSuperAdminEmail, roleSuperAdminPass, ls.name);
 
             // B. Society AGM / Admin
-            await User.register({
+            await registerUserResilient({
                 username: roleSocietyAdminEmail,
                 firstName: nameAdmin.firstName,
                 lastName: nameAdmin.lastName + " (AGM)",
@@ -259,7 +285,7 @@ async function seedSystemData() {
             logCredentials('Society Admin', roleSocietyAdminEmail, roleSocietyAdminPass, ls.name);
 
             // C. Security Guard
-            await User.register({
+            await registerUserResilient({
                 username: roleGuardEmail,
                 firstName: nameGuard.firstName,
                 lastName: nameGuard.lastName + " (Guard)",
@@ -276,7 +302,7 @@ async function seedSystemData() {
             const familyResident = [
                 { name: `${getRandomEthnicName(ls.district, isMuslim, 'female').firstName} ${nameResident.lastName}`, relation: 'Spouse', phoneNumber: String(7000000000 + Math.floor(Math.random() * 2999999999)) }
             ];
-            await User.register({
+            await registerUserResilient({
                 username: roleResidentEmail,
                 firstName: nameResident.firstName,
                 lastName: nameResident.lastName,
@@ -291,6 +317,7 @@ async function seedSystemData() {
                 kidsNames: [getRandomEthnicName(ls.district, isMuslim, 'male').firstName],
                 makePayment: 2900 // base maintenance charges + dynamic bills
             }, roleResidentPass);
+
             logCredentials('Resident', roleResidentEmail, roleResidentPass, ls.name);
 
             // 2. Scale resident occupancy dynamically: seed 18 to 35 unique family units per society.
@@ -337,7 +364,7 @@ async function seedSystemData() {
                 }
 
                 // Register standard resident
-                const residentUser = await User.register({
+                const residentUser = await registerUserResilient({
                     username: email,
                     firstName: nameRes.firstName,
                     lastName: surname,
@@ -352,6 +379,7 @@ async function seedSystemData() {
                     kidsNames: kidsNames,
                     makePayment: 2900 // June outstanding dues
                 }, 'demo');
+
 
                 seededResidents.push(residentUser);
             }
