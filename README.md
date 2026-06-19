@@ -96,12 +96,26 @@ This platform implements strict **logical database isolation** using dynamic Mon
 ## Seed Test Credentials (Sample Data)
 The server auto-seeds the following test accounts upon initial start:
 
-| Role | Username | Password | Purpose |
-|---|---|---|---|
-| **Super Admin** | `quisoft.in@gmail.com` | `admin123` | Control SaaS platform, change plans, approve societies. |
-| **Society Admin** | `quisoft.in+admin@gmail.com` | `demo` | Manage flats, approve residents, edit common bills. |
-| **Resident Owner** | `quisoft.in+resident@gmail.com` | `demo` | Chat with AI Assistant, pay maintenance, book Clubhouse. |
-| **Security Guard** | `quisoft.in+guard@gmail.com` | `demo` | Check in visitors, verify QR codes, log parcels. |
+### 1. Global Platform Super Admin
+| Username | Password | Purpose |
+|---|---|---|
+| `quisoft.in@gmail.com` | `admin123` | Control SaaS platform, manage subscription plans, approve new societies. |
+
+### 2. Universal Demo Login (Testing via login role dropdown)
+Log in with these credentials and choose any role from the dropdown menu to test immediately:
+- **Email/Username**: `demo@quisoft.in`
+- **Password**: `demo`
+
+### 3. Sample Society Role Accounts (e.g. Prestige Kingfisher Towers)
+Each of the 30 societies has unique, distinct credentials for every role. Below are the credentials for **Prestige Kingfisher Towers**:
+| Role | Username | Password |
+|---|---|---|
+| **Super Admin** | `superadmin@prestigekingfishertowers.quisoft.in` | `superadmin_prestigekingfishertowers_pass` |
+| **Society Admin** | `admin@prestigekingfishertowers.quisoft.in` | `admin_prestigekingfishertowers_pass` |
+| **Security Guard** | `guard@prestigekingfishertowers.quisoft.in` | `guard_prestigekingfishertowers_pass` |
+| **Resident Owner** | `resident@prestigekingfishertowers.quisoft.in` | `resident_prestigekingfishertowers_pass` |
+
+*(Refer to `password.txt` in your local workspace or check your database for the credentials of other societies).*
 
 ---
 **Developers By- quisoft.in**
