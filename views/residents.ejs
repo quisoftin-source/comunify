@@ -92,6 +92,17 @@
           </div>
         </div>
 
+        <div class="row">
+          <div class="col-sm-8 form-group">
+            <label style="color: #fff; font-weight: 500;">Kids Names (separated by commas if multiple)</label>
+            <input type="text" name="kidsNamesInput" class="form-control" placeholder="e.g. Aryan, Diya" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Bicycle Count</label>
+            <input type="number" name="bicycleCount" class="form-control" min="0" value="0" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+        </div>
+
         <div class="form-group">
           <label style="color: #fff; font-weight: 500;">Supplementary Notes / Remarks</label>
           <textarea name="additionalInfo" class="form-control" rows="2" placeholder="Any additional notes..." style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);"></textarea>
@@ -132,10 +143,12 @@
           <th style="color: var(--accent-cyan);">Father Name</th>
           <th style="color: var(--accent-cyan);">Occupancy</th>
           <th style="color: var(--accent-cyan);">Kids Count</th>
-          <th style="color: var(--accent-cyan);">4 Wheeler Count</th>
+          <th style="color: var(--accent-cyan);">Kids name</th>
+          <th style="color: var(--accent-cyan);">4 Wheeler</th>
           <th style="color: var(--accent-cyan);">4 Wheeler Numbers</th>
-          <th style="color: var(--accent-cyan);">2 Wheeler Count</th>
+          <th style="color: var(--accent-cyan);">2 Wheeler</th>
           <th style="color: var(--accent-cyan);">2 Wheeler Numbers</th>
+          <th style="color: var(--accent-cyan);">Bycycle count</th>
           <th style="color: var(--accent-cyan);">Remarks</th>
         </tr>
       </thead>
@@ -149,6 +162,10 @@
                   const parts = resident.flatNumber.split('-');
                   tower = parts[0].trim();
                   hNo = parts.slice(1).join('-').trim();
+              }
+              let kidsNamesStr = 'N/A';
+              if (resident.kidsNames && resident.kidsNames.length > 0) {
+                  kidsNamesStr = resident.kidsNames.map((name, i) => `${i + 1}. ${name.trim()}`).join(', ');
               }
             %>
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: transparent !important;">
@@ -164,10 +181,12 @@
                 </span>
               </td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.kidsCount || 0 %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= kidsNamesStr %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerCount || 0 %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerNumbers || 'N/A' %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerCount || 0 %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerNumbers || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.bicycleCount || 0 %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; max-width: 250px; word-wrap: break-word; color: #cbd5e1;">
                 <% if (resident.occupancyType === 'renter' && resident.ownerPhoneNumber) { %>
                   <strong>Owner Contact:</strong> +<%= resident.ownerPhoneNumber %><br>
@@ -178,7 +197,7 @@
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="13" class="text-center text-muted" style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05);">No registered residents in the database.</td>
+            <td colspan="15" class="text-center text-muted" style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05);">No registered residents in the database.</td>
           </tr>
         <% } %>
       </tbody>

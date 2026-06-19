@@ -100,6 +100,10 @@ const userSchema = new mongoose.Schema (
 		twoWheelerNumbers: {
 			type: String,
 			default: ''
+		},
+		bicycleCount: {
+			type: Number,
+			default: 0
 		}
 	},
 	{

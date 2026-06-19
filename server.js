@@ -895,7 +895,9 @@ function registerRoutes() {
                 fourWheelerCount,
                 fourWheelerNumbers,
                 twoWheelerCount,
-                twoWheelerNumbers
+                twoWheelerNumbers,
+                kidsNamesInput,
+                bicycleCount
             } = req.body;
 
             // 1. Mandatory validations
@@ -925,6 +927,8 @@ function registerRoutes() {
             const parsedOwnerPhone = occupancyType === 'renter' ? (parseInt(ownerPhoneNumber.replace(/[^0-9]/g, '')) || 0) : undefined;
             const parsedFourWheelerCount = parseInt(fourWheelerCount) || 0;
             const parsedTwoWheelerCount = parseInt(twoWheelerCount) || 0;
+            const parsedBicycleCount = parseInt(bicycleCount) || 0;
+            const parsedKidsNames = kidsNamesInput ? kidsNamesInput.split(',').map(s => s.trim()).filter(Boolean) : [];
 
             const User = user_collection.User;
 
@@ -948,6 +952,7 @@ function registerRoutes() {
                 flatNumber,
                 occupancyType: occupancyType === 'renter' ? 'renter' : 'owner',
                 kidsCount: parsedKids,
+                kidsNames: parsedKidsNames,
                 ownerPhoneNumber: parsedOwnerPhone,
                 additionalInfo: additionalInfo ? additionalInfo.trim() : '',
                 role: 'owner',
@@ -955,7 +960,8 @@ function registerRoutes() {
                 fourWheelerCount: parsedFourWheelerCount,
                 fourWheelerNumbers: fourWheelerNumbers ? fourWheelerNumbers.trim() : '',
                 twoWheelerCount: parsedTwoWheelerCount,
-                twoWheelerNumbers: twoWheelerNumbers ? twoWheelerNumbers.trim() : ''
+                twoWheelerNumbers: twoWheelerNumbers ? twoWheelerNumbers.trim() : '',
+                bicycleCount: parsedBicycleCount
             }, 'demo'); // Default demo password
 
             // Write Audit Log
