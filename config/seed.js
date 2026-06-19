@@ -112,7 +112,7 @@ async function seedSystemData() {
         const luxurySocieties = [
             { name: "Prestige Kingfisher Towers", address: "4, Vittal Mallya Road", city: "Bangalore", district: "Karnataka", pincode: 560001, plan: "gold" },
             { name: "Phoenix One Bangalore West", address: "1, Dr. Rajkumar Road, Rajajinagar", city: "Bangalore", district: "Karnataka", pincode: 560010, plan: "silver" },
-            { name: "Total Environment Windmills of Your Mind", address: "Basavanna Nagar, Whitefield", city: "Bangalore", district: "Karnataka", pincode: 560066, plan: "enterprise" },
+            { name: "Total Environment Windmills", address: "Basavanna Nagar, Whitefield", city: "Bangalore", district: "Karnataka", pincode: 560066, plan: "enterprise" },
             { name: "Embassy Boulevard", address: "Hosahalli, Hunasur Road", city: "Bangalore", district: "Karnataka", pincode: 562157, plan: "gold" },
             { name: "Sobha Royal Pavilion", address: "Sarjapur Main Road", city: "Bangalore", district: "Karnataka", pincode: 560035, plan: "bronze" },
             { name: "Karle Infra Zenith", address: "Nagavara", city: "Bangalore", district: "Karnataka", pincode: 560045, plan: "silver" },
