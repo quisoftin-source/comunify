@@ -1,0 +1,239 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <!-- Header -->
+        <div class="col-md-12">
+            <h2 style="color: #0083b0;"><i class="fas fa-comments"></i> Community Hub & Marketplace</h2>
+            <p class="text-muted">Chat with neighbors, trade items locally, and report lost items around the society complex.</p>
+            <hr style="border-color: var(--border-glass);">
+        </div>
+    </div>
+
+    <!-- Tab selection -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="hubTabs" style="border-color: var(--border-glass);">
+                <li class="active"><a href="#forumTab" data-toggle="tab"><i class="fas fa-bullhorn"></i> Residents Discussion Forum</a></li>
+                <li><a href="#buySellTab" data-toggle="tab"><i class="fas fa-shopping-bag"></i> Buy / Sell Marketplace</a></li>
+                <li><a href="#lostFoundTab" data-toggle="tab"><i class="fas fa-search-location"></i> Lost & Found bulletin</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content">
+        <!-- Discussion Forum Tab -->
+        <div class="tab-pane active" id="forumTab">
+            <div class="row">
+                <!-- Forum feed -->
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="far fa-comments"></i> Active Discussions</h4></div>
+                        <div class="panel-body">
+                            <% if (forumPosts && forumPosts.length > 0) { %>
+                                <% forumPosts.forEach(function(post) { %>
+                                    <div style="border: 1px solid var(--border-glass); border-radius: 12px; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.015);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span style="font-weight: bold; color: #fff;"><%= post.userName %> (Flat <%= post.flatNumber %>)</span>
+                                            <small class="text-muted"><%= new Date(post.createdAt).toLocaleString() %></small>
+                                        </div>
+                                        <p style="font-size: 14px; line-height: 1.5; margin-bottom: 0; white-space: pre-line;"><%= post.text %></p>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="text-muted text-center" style="padding: 20px;">No discussion posts yet. Start the conversation!</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Post form -->
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-pen"></i> Start a Discussion</h4></div>
+                        <div class="panel-body">
+                            <form action="/marketplace/forum/post" method="POST">
+                                <div class="form-group">
+                                    <textarea name="text" class="form-control" rows="5" placeholder="Share updates, ask questions or make recommendations to residents..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-paper-plane"></i> Publish Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buy / Sell Marketplace Tab -->
+        <div class="tab-pane" id="buySellTab">
+            <div class="row">
+                <!-- Marketplace feed -->
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-tags"></i> Active Marketplace Listings</h4></div>
+                        <div class="panel-body">
+                            <% if (marketItems && marketItems.length > 0) { %>
+                                <div class="row">
+                                    <% marketItems.forEach(function(item) { %>
+                                        <div class="col-sm-6" style="margin-bottom: 20px;">
+                                            <div style="border: 1px solid var(--border-glass); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.01);">
+                                                <div style="height: 150px; background: #1a1a24; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-glass);">
+                                                    <i class="fas fa-shopping-bag" style="font-size: 5rem; color: var(--accent-cyan); opacity: 0.3;"></i>
+                                                </div>
+                                                <div style="padding: 15px;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                                        <span class="label label-warning" style="font-size: 11px;"><%= item.category.toUpperCase() %></span>
+                                                        <h4 style="margin: 0; font-weight: bold; color: var(--accent-cyan);"><%= formatINR(item.price) %></h4>
+                                                    </div>
+                                                    <h4 style="font-weight: bold; color: #fff; margin-top: 5px; margin-bottom: 10px;"><%= item.title %></h4>
+                                                    <p class="text-muted" style="font-size: 12px; height: 36px; overflow: hidden;"><%= item.description %></p>
+                                                    <hr style="border-color: var(--border-glass); margin: 10px 0;">
+                                                    <div style="font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+                                                        <span>By: <strong><%= item.userName %> (Flat <%= item.flatNumber %>)</strong></span>
+                                                        <a href="tel:<%= item.phoneNumber %>" class="btn btn-xs btn-success"><i class="fas fa-phone-alt"></i> Call Seller</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            <% } else { %>
+                                <p class="text-muted text-center" style="padding: 20px;">No marketplace listings active at this time.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Listing Form -->
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-plus"></i> List Item For Sale/Rent</h4></div>
+                        <div class="panel-body">
+                            <form action="/marketplace/listing/create" method="POST">
+                                <div class="form-group">
+                                    <label>Item Title:</label>
+                                    <input type="text" name="title" class="form-control" placeholder="e.g. Wooden Dining Table" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <label>Price (₹):</label>
+                                            <input type="number" name="price" class="form-control" placeholder="Amount" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <label>Deal Type:</label>
+                                            <select name="category" class="form-control">
+                                                <option value="sell">For Sale</option>
+                                                <option value="rent">For Rent</option>
+                                                <option value="buy">Wanted to Buy</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description Details:</label>
+                                    <textarea name="description" class="form-control" rows="3" placeholder="Condition, dimensions, details..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-block"><i class="fas fa-plus-circle"></i> Publish Listing</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lost & Found Tab -->
+        <div class="tab-pane" id="lostFoundTab">
+            <div class="row">
+                <!-- Feed -->
+                <div class="col-md-8">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-search-location"></i> Active Lost & Found Reports</h4></div>
+                        <div class="panel-body">
+                            <% if (lostFoundItems && lostFoundItems.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Item Details</th>
+                                                <th>Category</th>
+                                                <th>Location Spot</th>
+                                                <th>Date Reported</th>
+                                                <th>Reported By</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% lostFoundItems.forEach(function(item) { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong style="color: #fff;"><%= item.title %></strong><br>
+                                                        <small class="text-muted"><%= item.description %></small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="label <%= item.category === 'lost' ? 'label-danger' : 'label-success' %>">
+                                                            <%= item.category.toUpperCase() %>
+                                                        </span>
+                                                    </td>
+                                                    <td><%= item.price %></td> <!-- Used price field as location string in helper schema to avoid new database structure -->
+                                                    <td><%= new Date(item.createdAt).toLocaleString().split(', ')[0] %></td>
+                                                    <td>Flat <%= item.flatNumber %></td>
+                                                    <td>
+                                                        <span class="label label-warning">Active Search</span>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <p class="text-muted text-center" style="padding: 20px;">No lost or found items reported currently.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Report Form -->
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-bullhorn"></i> File Lost/Found Report</h4></div>
+                        <div class="panel-body">
+                            <form action="/marketplace/lostfound/report" method="POST">
+                                <div class="form-group">
+                                    <label>Item Name:</label>
+                                    <input type="text" name="title" class="form-control" placeholder="e.g. Car Key fob, Black Wallet" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <label>Status Type:</label>
+                                            <select name="category" class="form-control">
+                                                <option value="lost">I Lost It</option>
+                                                <option value="found">I Found It</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <label>Location Spot:</label>
+                                            <input type="text" name="location" class="form-control" placeholder="e.g. Lobby B" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Item Details / Description:</label>
+                                    <textarea name="description" class="form-control" rows="3" placeholder="Describe color, size, brand, etc." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-block"><i class="fas fa-exclamation-circle"></i> File Report</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

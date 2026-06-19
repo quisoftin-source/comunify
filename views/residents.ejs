@@ -1,0 +1,100 @@
+<%- include('partials/header') %>
+
+<div style="padding:4%; padding-top:0%; font-family:sans-serif;font-size: 15px;">
+  <% if(isAdmin && appliedResidents.length){ %>
+    <div style="max-width:1000px; text-align:center; margin:auto; display:block; padding:20px 10% 10px; background-color:rgb(233, 233, 233); border-radius:0.5rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); margin-bottom: 20px;">
+      <div style="background-color:lightslategray; color:white; padding:1px 0; border-radius:0.5rem; max-width:500px; margin:auto; display:block; margin-bottom:10px">
+        <h4>Approve New Residents</h4>
+      </div>
+      <form action="/approveResident" method="POST">
+        <% appliedResidents.forEach(user => { %>
+          <div style="max-width:500px; text-align:center; margin:auto; display:block; padding:10px 10%;background-color:whitesmoke; border-radius:0.5rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.01); margin-bottom: 10px;">
+            <p><%= user.firstName %> <%= user.lastName %> - <%= user.flatNumber %></p>
+            <div>
+              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-success btn-sm" type="submit" name=validate[<%= user._id %>] value="approved"><i class="fas fa-check-circle fa-2x"></i></button>
+              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-danger btn-sm" type="submit" name=validate[<%= user._id %>] value="declined"><i class="fas fa-times-circle fa-2x"></i></button>
+            </div>
+          </div>
+        <% }) %>
+      </form>
+    </div>
+  <% } %>
+  <% if(isAdmin) { %>
+    <div style="max-width:1000px; margin:auto; margin-bottom: 25px; padding:20px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 1rem;">
+      <h4 style="color: #ff9800; font-weight: bold; margin-bottom: 15px;"><i class="fas fa-file-excel"></i> Bulk Import Residents</h4>
+      <form action="/residents/import" method="POST" enctype="multipart/form-data" class="form-inline" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <input type="file" name="excelFile" accept=".xlsx,.xls,.csv" class="form-control" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass); padding: 5px; height: auto;">
+        </div>
+        <button type="submit" class="btn btn-warning"><i class="fas fa-upload"></i> Upload Spreadsheet</button>
+        <span class="text-muted" style="font-size: 12px; max-width: 450px;">
+          Upload resident registry in <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> format. 
+          Spreadsheet must include columns: <code>Name</code> (or <code>First Name</code>, <code>Last Name</code>), <code>Contact</code>, <code>House Number</code>, <code>Email</code>. 
+          Optional columns: <code>Father Name</code>, <code>Occupancy</code> (Owner/Renter), <code>Kids Count</code>, <code>Owner Contact</code>, <code>Additional Info</code>.
+        </span>
+      </form>
+    </div>
+  <% } %>
+
+  <h2 style="background-color:rgb(51, 51, 51); padding:18px;color:white; text-align: center; border-radius: 1rem; font-size: 20px; max-width: 1000px; margin: auto; margin-bottom: 30px;">
+      Residents of <%= societyName %>
+  </h2>
+
+  <div class="flex-container">
+    <% societyResidents.forEach((resident) => { %>
+      <div>
+        <ul class="list-group zoom" style="margin-bottom: 0;">
+          <li class="list-group-item" style="text-align: center; border-bottom: none; background: transparent !important;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent-cyan); background: rgba(255,255,255,0.05); display: inline-flex; align-items: center; justify-content: center;">
+              <% if (resident.photoPath) { %>
+                <img src="<%= resident.photoPath %>" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+              <% } else { %>
+                <i class="fas fa-user-circle" style="font-size: 5rem; color: #94a3b8;"></i>
+              <% } %>
+            </div>
+          </li>
+          <li class="list-group-item flat-number" style="font-weight: bold; text-align: center;">
+            <i class="fas fa-house-user"></i> Unit <%= resident.flatNumber %>
+          </li>
+          <li class="list-group-item flat-owner" style="font-weight: bold; text-align: center;">
+            <%= resident.firstName %> <%= resident.lastName %>
+          </li>
+          <li class="list-group-item" style="font-size: 13px; text-align: center;">
+            <span class="label <%= resident.occupancyType === 'renter' ? 'label-warning' : 'label-success' %>" style="text-transform: uppercase;">
+              <%= resident.occupancyType || 'owner' %>
+            </span>
+          </li>
+          <li class="list-group-item" style="font-size: 13px;">
+            <i class="fas fa-phone-square-alt" style="color: var(--accent-cyan);"></i> Contact: <strong><%= resident.phoneNumber %></strong>
+          </li>
+          <li class="list-group-item" style="font-size: 13px;">
+            <i class="fas fa-user-tie" style="color: var(--accent-cyan);"></i> Father: <strong><%= resident.fatherName || 'N/A' %></strong>
+          </li>
+          <li class="list-group-item" style="font-size: 13px;">
+            <i class="fas fa-child" style="color: var(--accent-cyan);"></i> Kids: <strong><%= resident.kidsCount || 0 %></strong>
+            <% if (resident.kidsNames && resident.kidsNames.length > 0) { %>
+              <span style="font-size: 11px; color: #a1a1a1; display: block; margin-top: 4px;">(<%= resident.kidsNames.join(', ') %>)</span>
+            <% } %>
+          </li>
+          <% if (resident.occupancyType === 'renter') { %>
+            <li class="list-group-item" style="font-size: 13px; background-color: rgba(255, 152, 0, 0.05) !important;">
+              <i class="fas fa-phone-alt" style="color: #ff9800;"></i> Owner Phone: <strong><%= resident.ownerPhoneNumber || 'N/A' %></strong>
+            </li>
+            <% if (resident.rentAgreementPath) { %>
+              <li class="list-group-item" style="padding: 5px 15px; border-top: none;">
+                <a href="<%= resident.rentAgreementPath %>" target="_blank" class="btn btn-danger btn-xs btn-block" style="text-align: center; border-radius: 4px; font-size: 11px !important;"><i class="fas fa-file-pdf"></i> View Agreement</a>
+              </li>
+            <% } %>
+          <% } %>
+          <% if (resident.additionalInfo) { %>
+            <li class="list-group-item" style="font-size: 11px; font-style: italic; color: #94a3b8;">
+              <i class="fas fa-info-circle"></i> <%= resident.additionalInfo %>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

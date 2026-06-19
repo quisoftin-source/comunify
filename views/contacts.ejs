@@ -1,0 +1,130 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <!-- Title and Admin Controls -->
+    <div class="row">
+        <div class="col-sm-8">
+            <h2 style="color: #e91e63; margin-top: 5px;"><i class="fas fa-phone-square-alt"></i> Emergency Helpline Center</h2>
+            <p class="text-muted">Dial local emergency numbers directly or trigger the society-wide panic button.</p>
+        </div>
+        <div class="col-sm-4 text-right">
+            <% if (user.role === 'society_admin' || user.role === 'committee_member') { %>
+                <a href="/editContacts" class="btn btn-primary" style="margin-top: 5px;">
+                    <i class="fas fa-edit"></i> Edit Contacts
+                </a>
+            <% } %>
+        </div>
+    </div>
+    
+    <hr style="border-color: var(--border-glass);">
+
+    <!-- Panic SOS Button -->
+    <div class="row" style="margin-bottom: 30px;">
+        <div class="col-md-12">
+            <div class="panel panel-danger pulse-sos" style="background: rgba(233, 30, 99, 0.08) !important; border: 1px dashed crimson !important;">
+                <div class="panel-body text-center">
+                    <h4 style="color: #e91e63; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> EMERGENCY SOS PANIC TRIGGER</h4>
+                    <p class="text-muted">In case of medical, fire, or safety emergencies, press the button below. This will notify all security guards and nearby residents instantly.</p>
+                    <button class="btn btn-danger btn-lg" onclick="triggerResidentSOS()" id="resSosBtn" style="border-radius: 50px !important; padding: 15px 40px; font-weight: bold;">
+                        <i class="fas fa-bell"></i> BROADCAST SOS EMERGENCY
+                    </button>
+                    <div id="resSosStatus" style="margin-top: 15px; font-weight: bold; color: #e91e63; display: none;">
+                        🚨 EMERGENCY BROADCAST ACTIVE! Guards have been notified.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Helpline Contacts Cards Grid -->
+    <div class="row">
+        <!-- Plumbing -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-wrench" style="font-size: 3.5rem; color: #ff9800; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">Plumbing Service</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.plumbingService %></h3>
+                    <a href="tel:<%= contact.plumbingService %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Department</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pharmacy -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-pills" style="font-size: 3.5rem; color: #e91e63; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">24/7 Pharmacy</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.medicineShop %></h3>
+                    <a href="tel:<%= contact.medicineShop %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Pharmacy</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-user-md" style="font-size: 3.5rem; color: #00bcd4; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">Society Doctor</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.doctor %></h3>
+                    <a href="tel:<%= contact.doctor %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Doctor</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ambulance -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-ambulance" style="font-size: 3.5rem; color: #ff3b30; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">Ambulance Dispatch</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.ambulance %></h3>
+                    <a href="tel:<%= contact.ambulance %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Ambulance</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fire Station -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-fire-alt" style="font-size: 3.5rem; color: #ff5722; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">Fire Helpline</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.fireStation %></h3>
+                    <a href="tel:<%= contact.fireStation %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Fire Dept</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Police Station -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom: 20px;">
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #3f51b5; margin-bottom: 12px;"></i>
+                    <h4 style="font-weight: bold; color: #fff;">Local Police</h4>
+                    <h3 style="margin: 10px 0; font-size: 20px;"><%= contact.policeStation %></h3>
+                    <a href="tel:<%= contact.policeStation %>" class="btn btn-success btn-xs"><i class="fas fa-phone"></i> Call Police</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerResidentSOS() {
+        const btn = document.getElementById('resSosBtn');
+        const status = document.getElementById('resSosStatus');
+        
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> BROADCASTING...`;
+        
+        $.post('/guard/sos/trigger', {}, function(data) {
+            btn.innerHTML = `<i class="fas fa-check"></i> DISPATCHED`;
+            status.style.display = 'block';
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>

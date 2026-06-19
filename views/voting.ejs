@@ -1,0 +1,127 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 style="color: #e040fb;"><i class="fas fa-vote-yea"></i> Digital E-Voting & Surveys</h2>
+            <p class="text-muted">Participate in AGM resolutions, committee elections, and budget reviews securely.</p>
+            <hr style="border-color: var(--border-glass);">
+        </div>
+    </div>
+
+    <!-- Active Polls List -->
+    <div class="row">
+        <!-- Main voting area -->
+        <div class="col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-ballot"></i> Active Voting & Resolutions</h4></div>
+                <div class="panel-body">
+                    <% if (polls.length > 0) { %>
+                        <% polls.forEach(function(poll) { %>
+                            <% 
+                                // Check if current user has already voted
+                                const hasVoted = poll.votes.some(v => v.userId === user.id);
+                                const userVote = hasVoted ? poll.votes.find(v => v.userId === user.id).option : null;
+                                const totalVotes = poll.votes.length;
+                            %>
+                            <div style="border: 1px solid var(--border-glass); border-radius: 12px; padding: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.01);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span class="label label-info"><%= poll.type.toUpperCase() %></span>
+                                    <span class="text-muted" style="font-size: 12px;"><i class="fas fa-users"></i> <%= totalVotes %> total votes</span>
+                                </div>
+                                <h4 style="margin-top: 5px; font-weight: bold; color: #fff;"><%= poll.question %></h4>
+                                
+                                <hr style="border-color: var(--border-glass); margin: 12px 0;">
+
+                                <% if (hasVoted) { %>
+                                    <!-- Display Results if Voted -->
+                                    <div class="results-container">
+                                        <p class="text-success"><i class="fas fa-check-circle"></i> You voted for: <strong><%= userVote %></strong></p>
+                                        <h5 style="font-weight: bold; margin-bottom: 15px;">Current Standing:</h5>
+                                        <% poll.options.forEach(function(opt) { %>
+                                            <% 
+                                                const optVotes = poll.votes.filter(v => v.option === opt).length;
+                                                const percentage = totalVotes > 0 ? ((optVotes / totalVotes) * 100) : 0;
+                                            %>
+                                            <div style="margin-bottom: 10px;">
+                                                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px;">
+                                                    <span><%= opt %></span>
+                                                    <span><%= percentage.toFixed(1) %>% (<%= optVotes %> votes)</span>
+                                                </div>
+                                                <div class="progress" style="background: rgba(255,255,255,0.05); height: 10px; margin-bottom: 0;">
+                                                    <div class="progress-bar progress-bar-purple" role="progressbar" style="width: <%= percentage %>%; background-color: #e040fb;"></div>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                <% } else { %>
+                                    <!-- Display Vote Form if Not Voted -->
+                                    <form action="/voting/cast" method="POST">
+                                        <input type="hidden" name="pollId" value="<%= poll._id %>">
+                                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                            <% poll.options.forEach(function(opt) { %>
+                                                <label class="btn btn-secondary text-left" style="text-align: left; padding: 12px; font-size: 14px; text-transform: none; display: flex; align-items: center; cursor: pointer; border-radius: 8px !important;">
+                                                    <input type="radio" name="option" value="<%= opt %>" required style="margin-right: 10px; transform: scale(1.2);">
+                                                    <%= opt %>
+                                                </label>
+                                            <% }); %>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Cast Vote</button>
+                                    </form>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="text-muted text-center" style="padding: 20px;">No active polls or resolutions at this time.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Committee Poll Creator Panel (Role Restricted) -->
+        <div class="col-md-4">
+            <% if (user.role === 'society_admin' || user.role === 'committee_member') { %>
+                <div class="panel panel-default" style="border-top: 3px solid #e040fb !important;">
+                    <div class="panel-heading"><h4><i class="fas fa-plus"></i> Create New Poll</h4></div>
+                    <div class="panel-body">
+                        <form action="/voting/create" method="POST">
+                            <div class="form-group">
+                                <label>Poll / Resolution Question:</label>
+                                <textarea name="question" class="form-control" rows="3" placeholder="e.g. Approve the sinking fund budget increase for FY 2026?" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Voting Category:</label>
+                                <select name="type" class="form-control">
+                                    <option value="survey">General Survey / Poll</option>
+                                    <option value="election">Management Committee Election</option>
+                                    <option value="agm">Annual General Meeting (AGM) Resolution</option>
+                                    <option value="budget">Capital/Budget Approvals</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Options (One per line):</label>
+                                <textarea name="optionsRaw" class="form-control" rows="4" placeholder="Yes&#10;No&#10;Abstain" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block"><i class="fas fa-plus-circle"></i> Publish Poll</button>
+                        </form>
+                    </div>
+                </div>
+            <% } else { %>
+                <!-- Help Info Card for Residents -->
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4><i class="fas fa-info-circle"></i> E-Voting Rules</h4></div>
+                    <div class="panel-body">
+                        <p style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">
+                            - Every flat is entitled to exactly 1 vote per resolution.<br>
+                            - Voting is anonymous. No names will be published next to option selections.<br>
+                            - Results will update in real-time as votes are registered.<br>
+                            - For modifications, contact your Tower Committee representative.
+                        </p>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

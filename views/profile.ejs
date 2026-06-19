@@ -1,0 +1,193 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <!-- Title -->
+    <div class="row">
+        <div class="col-sm-8">
+            <h2 style="color: #00bcd4; margin-top: 5px;"><i class="fas fa-id-card"></i> Resident Profile Hub</h2>
+            <p class="text-muted">Manage personal settings, register family members, and manage your vehicle sticker parking allocations.</p>
+        </div>
+        <div class="col-sm-4 text-right">
+            <a href="/editProfile" class="btn btn-danger" style="margin-top: 5px;">
+                <i class="fas fa-edit"></i> Edit Profile Info
+            </a>
+        </div>
+    </div>
+    
+    <hr style="border-color: var(--border-glass);">
+
+    <div class="row">
+        <!-- Profile Column -->
+        <div class="col-md-6">
+            <!-- Personal Info Card -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-user"></i> Personal Account Details</h4></div>
+                <div class="panel-body" style="font-size: 14px;">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">Account Name:</span>
+                            <strong><%= resident.firstName %> <%= resident.lastName %></strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">Phone Number:</span>
+                            <strong><%= resident.phoneNumber %></strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">Email (Username):</span>
+                            <strong style="word-break: break-all;"><%= resident.username %></strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">Allocated Unit:</span>
+                            <span class="label label-danger">Flat <%= resident.flatNumber %></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-muted">Society Branch:</span>
+                            <strong><%= society.societyName %></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Society Information Card -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-city"></i> Society Office Info</h4></div>
+                <div class="panel-body" style="font-size: 14px;">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">Address Line:</span>
+                            <strong><%= society.societyAddress.address %></strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 8px;">
+                            <span class="text-muted">City / District:</span>
+                            <strong><%= society.societyAddress.city %>, <%= society.societyAddress.district %></strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span class="text-muted">Postal Code:</span>
+                            <strong><%= society.societyAddress.postalCode %></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata & Family/Vehicle column -->
+        <div class="col-md-6">
+            <!-- Family Members Card -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-users"></i> Family Members & Co-residents</h4></div>
+                <div class="panel-body">
+                    <% if (resident.familyMembers && resident.familyMembers.length > 0) { %>
+                        <ul class="list-group" style="width: 100%; margin-bottom: 15px;">
+                            <% resident.familyMembers.forEach(function(member) { %>
+                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; font-size:13px;">
+                                    <span><strong><%= member.name %></strong> (<%= member.relation %>)</span>
+                                    <span class="text-muted"><%= member.phoneNumber %></span>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    <% } else { %>
+                        <p class="text-muted text-center" style="font-size:13px;">No family members registered under this flat unit yet.</p>
+                    <% } %>
+                    
+                    <hr style="border-color: var(--border-glass); margin: 15px 0;">
+                    
+                    <!-- Add Family Form -->
+                    <form action="/profile/family/add" method="POST" class="form-inline text-center">
+                        <div class="form-group" style="margin-right: 5px;">
+                            <input type="text" name="name" class="form-control input-sm" placeholder="Member Name" required style="width: 130px;">
+                        </div>
+                        <div class="form-group" style="margin-right: 5px;">
+                            <select name="relation" class="form-control input-sm" required style="width: 120px;">
+                                <option value="" disabled selected>Relation</option>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Son">Son</option>
+                                <option value="Daughter">Daughter</option>
+                                <option value="Father">Father</option>
+                                <option value="Mother">Mother</option>
+                                <option value="Brother">Brother</option>
+                                <option value="Sister">Sister</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-right: 5px;">
+                            <input type="text" name="phoneNumber" class="form-control input-sm" placeholder="10-digit Phone" required pattern="\d{10}" title="Must be exactly 10 digits" maxlength="10" style="width: 110px;">
+                        </div>
+                        <button type="submit" class="btn btn-success btn-xs" style="margin-top: 5px;"><i class="fas fa-plus"></i> Add</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Vehicles Card -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-car"></i> Registered Resident Vehicles</h4></div>
+                <div class="panel-body">
+                    <% if (vehicles && vehicles.length > 0) { %>
+                        <ul class="list-group" style="width: 100%; margin-bottom: 15px;">
+                            <% vehicles.forEach(function(v) { %>
+                                <li class="list-group-item" style="display: flex; justify-content: space-between; align-items: center; font-size:13px;">
+                                    <span>
+                                        <i class="fas <%= (v.vehicleType === '2_wheeler' || v.vehicleType === 'Two-Wheeler') ? 'fa-motorcycle' : 'fa-car' %>" style="color: var(--accent-cyan);"></i> 
+                                        <strong><%= v.plateNumber %></strong>
+                                    </span>
+                                    <span>Sticker: <strong style="color: var(--accent-orange);"><%= v.stickerNumber %></strong></span>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    <% } else { %>
+                        <p class="text-muted text-center" style="font-size:13px;">No vehicles registered for your parking slot yet.</p>
+                    <% } %>
+
+                    <hr style="border-color: var(--border-glass); margin: 15px 0;">
+
+                    <!-- Add Vehicle Form -->
+                    <form action="/profile/vehicle/add" method="POST" class="form-inline text-center">
+                        <div class="form-group" style="margin-right: 5px;">
+                            <input type="text" name="plateNumber" id="vehiclePlateInput" class="form-control input-sm" placeholder="Plate (e.g. GJ05-RJ-7986)" required style="width: 160px;" maxlength="12">
+                        </div>
+                        <div class="form-group" style="margin-right: 5px;">
+                            <select name="vehicleType" class="form-control input-sm" style="width: 120px;">
+                                <option value="4_wheeler">4 Wheeler (Car)</option>
+                                <option value="2_wheeler">2 Wheeler (Bike)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-xs" style="margin-top: 5px;"><i class="fas fa-plus"></i> Add Vehicle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var plateInput = document.getElementById('vehiclePlateInput');
+        if (plateInput) {
+            plateInput.addEventListener('input', function(e) {
+                var cursorPosition = this.selectionStart;
+                var originalLength = this.value.length;
+                
+                // Clean non-alphanumeric
+                var val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                val = val.substring(0, 10);
+                
+                var formatted = '';
+                if (val.length <= 4) {
+                    formatted = val;
+                } else if (val.length <= 6) {
+                    formatted = val.substring(0, 4) + '-' + val.substring(4);
+                } else {
+                    formatted = val.substring(0, 4) + '-' + val.substring(4, 6) + '-' + val.substring(6);
+                }
+                
+                this.value = formatted;
+                
+                // Adjust cursor position if hyphen was added or removed
+                var newLength = formatted.length;
+                var diff = newLength - originalLength;
+                this.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+            });
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

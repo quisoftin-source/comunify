@@ -1,0 +1,439 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <!-- Title and Stats Header -->
+        <div class="col-md-12">
+            <h2 style="color: #ec407a;"><i class="fas fa-user-shield"></i> Super Admin Control Panel</h2>
+            <p class="text-muted">Enterprise Platform Administration & Performance Dashboard</p>
+            <hr style="border-color: var(--border-glass);">
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row text-center" style="margin-bottom: 30px;">
+        <div class="col-md-3">
+            <div class="stats-item">
+                <i class="fas fa-city" style="color: #ec407a;"></i>
+                <h3><%= societies.length %></h3>
+                <p>Total Societies Onboarded</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <i class="fas fa-file-invoice-dollar" style="color: #ff9800;"></i>
+                <h3><%= formatINR(mrr) %></h3>
+                <p>Monthly Recurring Revenue (MRR)</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <i class="fas fa-ticket-alt" style="color: #00bcd4;"></i>
+                <h3><%= pendingTickets.length %></h3>
+                <p>Open Support Tickets</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <i class="fas fa-hdd" style="color: #4caf50;"></i>
+                <h3><%= totalStorageUsed.toFixed(1) %> MB</h3>
+                <p>Platform Storage Used</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Navigation Tabs -->
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-sliders-h"></i> Management Menu</h4></div>
+                <div class="panel-body" style="padding: 10px !important;">
+                    <ul class="nav nav-pills nav-stacked" id="superAdminTabs">
+                        <li class="active"><a href="#societiesTab" data-toggle="pill"><i class="fas fa-building"></i> Societies Approval</a></li>
+                        <li><a href="#subscriptionsTab" data-toggle="pill"><i class="fas fa-gem"></i> Subscription Plans</a></li>
+                        <li><a href="#broadcastTab" data-toggle="pill"><i class="fas fa-bullhorn"></i> Global Broadcasts</a></li>
+                        <li><a href="#ticketsTab" data-toggle="pill"><i class="fas fa-headset"></i> Support Tickets <% if(pendingTickets.length > 0) { %><span class="label label-danger"><%= pendingTickets.length %></span><% } %></a></li>
+                        <li><a href="#revenueTab" data-toggle="pill"><i class="fas fa-chart-line"></i> Revenue Analytics</a></li>
+                        <li><a href="#storageTab" data-toggle="pill"><i class="fas fa-database"></i> Storage monitoring</a></li>
+                        <li><a href="#auditTab" data-toggle="pill"><i class="fas fa-history"></i> System Audit Logs</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-body text-center">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 0;">
+                        <i class="fas fa-heart" style="color: crimson;"></i> <strong>Developers By- quisoft.in</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content Panel -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                
+                <!-- Societies Onboarding Tab -->
+                <div class="tab-pane active" id="societiesTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-top-left-radius: 15px !important; border-top-right-radius: 15px !important; padding: 15px 20px !important;">
+                            <h4 style="margin: 0;"><i class="fas fa-building"></i> Society Approval & Registry</h4>
+                            <a href="/register" class="btn btn-info btn-xs" style="margin-top: 0; padding: 6px 12px; font-size: 11px !important;"><i class="fas fa-plus-circle"></i> Register New Society & AGM</a>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Society Name</th>
+                                            <th>Admin Email</th>
+                                            <th>City</th>
+                                            <th>Plan</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% societies.forEach(function(soc) { %>
+                                            <tr>
+                                                <td><strong><%= soc.societyName %></strong></td>
+                                                <td><%= soc.admin %></td>
+                                                <td><%= soc.societyAddress.city %></td>
+                                                <td>
+                                                    <span class="label label-info"><%= soc.subscriptionPlan.toUpperCase() %></span>
+                                                </td>
+                                                <td>
+                                                    <span class="label <%= soc.status === 'approved' ? 'label-success' : soc.status === 'pending' ? 'label-warning' : 'label-danger' %>">
+                                                        <%= soc.status %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style="display: flex; gap: 5px;">
+                                                        <% if (soc.status !== 'approved') { %>
+                                                            <form action="/superadmin/society/approve" method="POST" style="display:inline;">
+                                                                <input type="hidden" name="societyId" value="<%= soc._id %>">
+                                                                <button type="submit" class="btn btn-success btn-xs"><i class="fas fa-check"></i> Approve</button>
+                                                            </form>
+                                                        <% } %>
+                                                        <% if (soc.status !== 'suspended') { %>
+                                                            <form action="/superadmin/society/suspend" method="POST" style="display:inline;">
+                                                                <input type="hidden" name="societyId" value="<%= soc._id %>">
+                                                                <button type="submit" class="btn btn-danger btn-xs"><i class="fas fa-ban"></i> Suspend</button>
+                                                            </form>
+                                                        <% } %>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscriptions Plans Tab -->
+                <div class="tab-pane" id="subscriptionsTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-gem"></i> Configure Subscription Tiers</h4></div>
+                        <div class="panel-body">
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div style="border: 1px solid var(--border-glass); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                        <h4 style="color: #cd7f32;">BRONZE</h4>
+                                        <h3><%= formatINR(99) %><small>/mo</small></h3>
+                                        <p class="text-muted">Quota: 500 MB</p>
+                                        <p class="text-muted">Max users: 100</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="border: 1px solid var(--border-glass); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                        <h4 style="color: #c0c0c0;">SILVER</h4>
+                                        <h3><%= formatINR(199) %><small>/mo</small></h3>
+                                        <p class="text-muted">Quota: 2 GB</p>
+                                        <p class="text-muted">Max users: 500</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="border: 1px solid var(--border-glass); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                        <h4 style="color: #ffd700;">GOLD</h4>
+                                        <h3><%= formatINR(299) %><small>/mo</small></h3>
+                                        <p class="text-muted">Quota: 5 GB</p>
+                                        <p class="text-muted">Max users: 2,000</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div style="border: 1px solid var(--border-glass); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                        <h4 style="color: #e040fb;">ENTERPRISE</h4>
+                                        <h3><%= formatINR(499) %><small>/mo</small></h3>
+                                        <p class="text-muted">Quota: 50 GB</p>
+                                        <p class="text-muted">Max users: Unlimited</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr style="border-color: var(--border-glass);">
+                            <h4>Change Society Plan Mapping</h4>
+                            <form action="/superadmin/society/change-plan" method="POST" class="form-inline">
+                                <div class="form-group" style="margin-right: 10px;">
+                                    <label>Select Society:</label>
+                                    <select name="societyId" class="form-control" required>
+                                        <% societies.forEach(function(soc) { %>
+                                            <option value="<%= soc._id %>"><%= soc.societyName %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-right: 10px;">
+                                    <label>Subscription Plan:</label>
+                                    <select name="plan" class="form-control" required>
+                                        <option value="bronze">Bronze (₹99/mo)</option>
+                                        <option value="silver">Silver (₹199/mo)</option>
+                                        <option value="gold">Gold (₹299/mo)</option>
+                                        <option value="enterprise">Enterprise (₹499/mo)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">Update Plan</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Broadcasts Tab -->
+                <div class="tab-pane" id="broadcastTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-bullhorn"></i> Broadcast Platform Announcements</h4></div>
+                        <div class="panel-body">
+                            <p class="text-muted">This announcement will be published to the Noticeboard of EVERY society registered on the platform.</p>
+                            <form action="/superadmin/broadcast" method="POST">
+                                <div class="form-group">
+                                    <label>Announcement Subject:</label>
+                                    <input type="text" name="subject" class="form-control" placeholder="e.g. Platform Scheduled Maintenance" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Details / Message Content:</label>
+                                    <textarea name="details" class="form-control" rows="6" placeholder="Write announcement details here..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Publish Global Broadcast</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Tickets Tab -->
+                <div class="tab-pane" id="ticketsTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-headset"></i> Platform Support Tickets</h4></div>
+                        <div class="panel-body">
+                            <% if (tickets.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Society Name</th>
+                                                <th>Admin</th>
+                                                <th>Issue Category</th>
+                                                <th>Description</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% tickets.forEach(function(t) { %>
+                                                <tr>
+                                                    <td><%= t.date %></td>
+                                                    <td><%= t.societyName %></td>
+                                                    <td><%= t.adminEmail %></td>
+                                                    <td><span class="label label-warning"><%= t.category %></span></td>
+                                                    <td><%= t.description %></td>
+                                                    <td>
+                                                        <span class="label <%= t.status === 'open' ? 'label-danger' : 'label-success' %>"><%= t.status %></span>
+                                                    </td>
+                                                    <td>
+                                                        <% if(t.status === 'open') { %>
+                                                            <form action="/superadmin/ticket/resolve" method="POST">
+                                                                <input type="hidden" name="ticketId" value="<%= t._id %>">
+                                                                <button type="submit" class="btn btn-success btn-xs"><i class="fas fa-check-double"></i> Mark Resolved</button>
+                                                            </form>
+                                                        <% } else { %>
+                                                            <span class="text-muted"><i class="fas fa-check"></i> Resolved</span>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <p class="text-muted text-center" style="padding: 20px;">No support tickets have been raised yet.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue tab -->
+                <div class="tab-pane" id="revenueTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-chart-line"></i> SaaS Revenue Dashboard</h4></div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <canvas id="revenueChart" style="max-height: 250px;"></canvas>
+                                </div>
+                                <div class="col-md-5">
+                                    <h4>Plan Breakdown</h4>
+                                    <canvas id="plansPieChart" style="max-height: 200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Monitoring Tab -->
+                <div class="tab-pane" id="storageTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-database"></i> Storage Quota Usage by Society</h4></div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Society Name</th>
+                                            <th>Plan</th>
+                                            <th>Quota Assigned</th>
+                                            <th>Storage Used</th>
+                                            <th>Usage Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% societies.forEach(function(soc) { %>
+                                            <% 
+                                                const percentage = ((soc.storageUsedMb / soc.storageQuotaMb) * 100);
+                                                let barColor = 'progress-bar-success';
+                                                if (percentage > 85) barColor = 'progress-bar-danger';
+                                                else if (percentage > 60) barColor = 'progress-bar-warning';
+                                            %>
+                                            <tr>
+                                                <td><strong><%= soc.societyName %></strong></td>
+                                                <td><%= soc.subscriptionPlan.toUpperCase() %></td>
+                                                <td><%= soc.storageQuotaMb %> MB</td>
+                                                <td><%= soc.storageUsedMb.toFixed(2) %> MB</td>
+                                                <td>
+                                                    <div class="progress" style="margin-bottom: 0; background-color: rgba(255,255,255,0.05); height: 12px;">
+                                                        <div class="progress-bar <%= barColor %>" role="progressbar" style="width: <%= percentage %>%;"></div>
+                                                    </div>
+                                                    <small class="text-muted"><%= percentage.toFixed(1) %>% used</small>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Tab -->
+                <div class="tab-pane" id="auditTab">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h4><i class="fas fa-history"></i> System Platform Audit Logs</h4></div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>User</th>
+                                            <th>Role</th>
+                                            <th>Action</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% auditLogs.forEach(function(log) { %>
+                                            <tr>
+                                                <td><small><%= new Date(log.createdAt).toLocaleString() %></small></td>
+                                                <td><%= log.userName %> (<%= log.userEmail %>)</td>
+                                                <td><span class="badge badge-role <%= log.role === 'super_admin' ? 'badge-super' : 'badge-admin' %>"><%= log.role %></span></td>
+                                                <td><strong><%= log.action %></strong></td>
+                                                <td><%= log.details %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Build analytics charts
+    $(document).ready(function() {
+        // Revenue Chart (Simulated 6 month growth)
+        const revCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'MRR Growth (₹)',
+                    data: [<%= mrr * 0.5 %>, <%= mrr * 0.6 %>, <%= mrr * 0.7 %>, <%= mrr * 0.85 %>, <%= mrr * 0.95 %>, <%= mrr %>],
+                    borderColor: '#ec407a',
+                    backgroundColor: 'rgba(236, 64, 122, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#fff' } }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // Plan distribution
+        const pieCtx = document.getElementById('plansPieChart').getContext('2d');
+        
+        // Count distribution of plans
+        let bronze = 0, silver = 0, gold = 0, enterprise = 0;
+        <% societies.forEach(function(soc) { %>
+            <% if (soc.subscriptionPlan === 'bronze') { %> bronze++; <% } %>
+            <% if (soc.subscriptionPlan === 'silver') { %> silver++; <% } %>
+            <% if (soc.subscriptionPlan === 'gold') { %> gold++; <% } %>
+            <% if (soc.subscriptionPlan === 'enterprise') { %> enterprise++; <% } %>
+        <% }); %>
+
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bronze', 'Silver', 'Gold', 'Enterprise'],
+                datasets: [{
+                    data: [bronze, silver, gold, enterprise],
+                    backgroundColor: ['#cd7f32', '#c0c0c0', '#ffd700', '#e040fb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<%- include('partials/footer') %>

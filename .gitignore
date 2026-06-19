@@ -1,0 +1,11 @@
+node_modules
+.env
+.env
+password.txt
+NODE_ENV
+comunify@*
+
+.env
+password.txt
+NODE_ENV
+comunify@*

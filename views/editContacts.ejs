@@ -1,0 +1,52 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading text-center">
+                    <h4><i class="fas fa-edit"></i> Edit Emergency Helplines</h4>
+                </div>
+                <div class="panel-body">
+                    <form action="/editContacts" method="POST">
+                        <div class="form-group">
+                            <label for="plumbingService">Plumbing Service Number:</label>
+                            <input name="plumbingService" type="tel" id="plumbingService" class="form-control" value="<%= contact.plumbingService %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medicineShop">Pharmacy Number:</label>
+                            <input name="medicineShop" type="tel" id="medicineShop" class="form-control" value="<%= contact.medicineShop %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="doctor">Doctor Contact Number:</label>
+                            <input name="doctor" type="tel" id="doctor" class="form-control" value="<%= contact.doctor %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ambulance">Ambulance Contact Number:</label>
+                            <input name="ambulance" type="tel" id="ambulance" class="form-control" value="<%= contact.ambulance %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fireStation">Fire Station Contact Number:</label>
+                            <input name="fireStation" type="tel" id="fireStation" class="form-control" value="<%= contact.fireStation %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="policeStation">Police Station Contact Number:</label>
+                            <input name="policeStation" type="tel" id="policeStation" class="form-control" value="<%= contact.policeStation %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="guard">Guard Desk Intercom Code:</label>
+                            <input name="guard" type="tel" id="guard" class="form-control" value="<%= contact.guard %>" required>
+                        </div>
+                        
+                        <div style="margin-top: 25px;">
+                            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-check"></i> Save Helpline Numbers</button>
+                            <a href="/contacts" class="btn btn-secondary btn-block">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

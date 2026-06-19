@@ -1,0 +1,314 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 style="color: #00bcd4;"><i class="fas fa-video"></i> CCTV Surveillance Live Center</h2>
+            <p class="text-muted">Role-Based Read-Only Surveillance Access System</p>
+            <hr style="border-color: var(--border-glass);">
+        </div>
+    </div>
+
+    <!-- Alert banner explaining role restrictions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info" style="background: rgba(0, 188, 212, 0.05) !important;">
+                <div class="panel-body">
+                    <p style="margin-bottom: 0;">
+                        <i class="fas fa-user-lock"></i> <strong>Security Notice:</strong> You are logged in as a <strong><%= user.role.replace('_', ' ') %></strong>. 
+                        In accordance with society privacy bylaws and your role permissions, you have <strong>Read-Only access</strong> to the cameras listed below. Downloading streams or altering feeds is strictly prohibited.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- CCTV Grid -->
+        <div class="col-md-9">
+            <div class="row">
+                <!-- Camera 1: Gate 1 (Public Area) - Visible to All -->
+                <div class="col-sm-6" style="margin-bottom: 20px;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong>CAM 01 - MAIN GATE 1</strong>
+                            <span class="label label-success">ONLINE</span>
+                        </div>
+                        <div class="panel-body" style="padding: 10px !important;">
+                            <div class="cctv-stream-container">
+                                <canvas id="camGate1" width="400" height="250" style="width: 100%; display: block; background: #000;"></canvas>
+                            </div>
+                        </div>
+                        <div class="panel-footer text-center" style="background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); padding: 5px;">
+                            <button class="btn btn-info btn-xs" onclick="openMobileStreamQR('camGate1', 'CAM 01 - MAIN GATE 1')"><i class="fas fa-mobile-alt"></i> Stream to Mobile (QR)</button>
+                        </div>
+                    </div>
+                </div>
+ 
+                <!-- Camera 2: Main Lobby - Visible to Admins, Committee, and Residents -->
+                <% if (user.role !== 'security_guard') { %>
+                    <div class="col-sm-6" style="margin-bottom: 20px;">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>CAM 02 - TOWER LOBBY A</strong>
+                                <span class="label label-success">ONLINE</span>
+                            </div>
+                            <div class="panel-body" style="padding: 10px !important;">
+                                <div class="cctv-stream-container">
+                                    <canvas id="camLobbyA" width="400" height="250" style="width: 100%; display: block; background: #000;"></canvas>
+                                </div>
+                            </div>
+                            <div class="panel-footer text-center" style="background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); padding: 5px;">
+                                <button class="btn btn-info btn-xs" onclick="openMobileStreamQR('camLobbyA', 'CAM 02 - TOWER LOBBY A')"><i class="fas fa-mobile-alt"></i> Stream to Mobile (QR)</button>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+ 
+                <!-- Camera 3: Main Parking - Visible to Super Admin, Society Admin, and Guard -->
+                <% if (user.role === 'super_admin' || user.role === 'society_admin' || user.role === 'security_guard') { %>
+                    <div class="col-sm-6" style="margin-bottom: 20px;">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>CAM 03 - BASEMENT PARKING P2</strong>
+                                <span class="label label-success">ONLINE</span>
+                            </div>
+                            <div class="panel-body" style="padding: 10px !important;">
+                                <div class="cctv-stream-container">
+                                    <canvas id="camParking" width="400" height="250" style="width: 100%; display: block; background: #000;"></canvas>
+                                </div>
+                            </div>
+                            <div class="panel-footer text-center" style="background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); padding: 5px;">
+                                <button class="btn btn-info btn-xs" onclick="openMobileStreamQR('camParking', 'CAM 03 - BASEMENT PARKING P2')"><i class="fas fa-mobile-alt"></i> Stream to Mobile (QR)</button>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+ 
+                <!-- Camera 4: Back Gate & Perimeter - Visible to Super Admin and Society Admin only -->
+                <% if (user.role === 'super_admin' || user.role === 'society_admin') { %>
+                    <div class="col-sm-6" style="margin-bottom: 20px;">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>CAM 04 - BACK GATE & AMENITIES</strong>
+                                <span class="label label-success">ONLINE</span>
+                            </div>
+                            <div class="panel-body" style="padding: 10px !important;">
+                                <div class="cctv-stream-container">
+                                    <canvas id="camBackGate" width="400" height="250" style="width: 100%; display: block; background: #000;"></canvas>
+                                </div>
+                            </div>
+                            <div class="panel-footer text-center" style="background: rgba(255,255,255,0.02); border-top: 1px solid var(--border-glass); padding: 5px;">
+                                <button class="btn btn-info btn-xs" onclick="openMobileStreamQR('camBackGate', 'CAM 04 - BACK GATE & AMENITIES')"><i class="fas fa-mobile-alt"></i> Stream to Mobile (QR)</button>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Sidebar Diagnostics & Motion Alerts -->
+        <div class="col-md-3">
+            <% if (user.role === 'security_guard' || user.role === 'society_admin') { %>
+                <div class="panel panel-default" style="border-left: 4px solid #4caf50 !important;">
+                    <div class="panel-heading"><h4><i class="fas fa-qrcode"></i> Gate QR Pass Scan</h4></div>
+                    <div class="panel-body text-center" style="padding: 15px;">
+                        <p class="text-muted" style="font-size: 11px;">Verify visitor passes directly from the CCTV command panel.</p>
+                        <button class="btn btn-success btn-sm btn-block" onclick="openGateScannerModal()"><i class="fas fa-camera"></i> Scan Gate QR Pass</button>
+                    </div>
+                </div>
+            <% } %>
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-heartbeat"></i> Camera Diagnostics</h4></div>
+                <div class="panel-body">
+                    <p style="font-size: 13px;">Health Check status of feeds:</p>
+                    <ul class="list-group" style="width: 100%; margin-bottom: 0;">
+                        <li class="list-group-item" style="font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>CAM 01: Main Gate</span>
+                            <span class="text-success"><i class="fas fa-check-circle"></i> 14ms (Excellent)</span>
+                        </li>
+                        <% if (user.role !== 'security_guard') { %>
+                        <li class="list-group-item" style="font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>CAM 02: Lobby A</span>
+                            <span class="text-success"><i class="fas fa-check-circle"></i> 18ms (Excellent)</span>
+                        </li>
+                        <% } %>
+                        <% if (user.role === 'super_admin' || user.role === 'society_admin' || user.role === 'security_guard') { %>
+                        <li class="list-group-item" style="font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>CAM 03: Parking P2</span>
+                            <span class="text-warning"><i class="fas fa-check-circle"></i> 48ms (Buffer)</span>
+                        </li>
+                        <% } %>
+                        <% if (user.role === 'super_admin' || user.role === 'society_admin') { %>
+                        <li class="list-group-item" style="font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>CAM 04: Back Gate</span>
+                            <span class="text-success"><i class="fas fa-check-circle"></i> 22ms (Excellent)</span>
+                        </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-history"></i> Motion Alerts</h4></div>
+                <div class="panel-body" style="padding: 10px !important;">
+                    <div id="motionAlertLogs" style="max-height: 250px; overflow-y: auto; font-size: 11px;">
+                        <!-- Inserted dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Canvas animation simulator for CCTV feeds
+    $(document).ready(function() {
+        // Draw static noise, timestamps and graphics on canvases
+        const canvases = [
+            { id: 'camGate1', label: 'CAM 01 - MAIN GATE 1', entities: ['Car', 'Delivery Bike', 'Resident Walking'] },
+            { id: 'camLobbyA', label: 'CAM 02 - LOBBY A', entities: ['Elevator door', 'Lobby sofa', 'Resident entering'] },
+            { id: 'camParking', label: 'CAM 03 - BASEMENT PARKING', entities: ['Tesla Charging', 'Honda Civic', 'Bicycle rack'] },
+            { id: 'camBackGate', label: 'CAM 04 - BACK GATE & PARK', entities: ['Gym entry', 'Jogging track', 'Park bench'] }
+        ];
+
+        canvases.forEach(cam => {
+            const canvas = document.getElementById(cam.id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let entityX = 50;
+            let direction = 1;
+
+            // Generate motion alerts
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const log = document.getElementById('motionAlertLogs');
+                    const time = new Date().toLocaleTimeString();
+                    const alertHtml = `<div style="border-bottom: 1px solid var(--border-glass); padding: 5px; margin-bottom: 5px;">
+                        <span style="color: var(--accent-orange); font-weight:bold;">[MOTION]</span> ${cam.label}<br>
+                        <small class="text-muted">${time} - Entity detected</small>
+                    </div>`;
+                    log.insertAdjacentHTML('afterbegin', alertHtml);
+                }
+            }, 5000);
+
+            function render() {
+                ctx.fillStyle = '#0a0d13';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw scan lines
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.height; i += 6) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Draw Grid
+                ctx.strokeStyle = 'rgba(0, 188, 212, 0.05)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.moveTo(0, canvas.height / 2); ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+
+                // Draw static noise randomly
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                for (let i = 0; i < 50; i++) {
+                    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+                }
+
+                // Move simulated entity
+                entityX += 0.8 * direction;
+                if (entityX > 300 || entityX < 50) direction *= -1;
+
+                // Draw simulated background entities
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.font = '12px Outfit';
+                ctx.fillText(cam.entities[0], 40, 80);
+                ctx.fillText(cam.entities[1], 240, 180);
+
+                // Draw moving target box
+                ctx.strokeStyle = '#e91e63';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(entityX, 110, 50, 40);
+                ctx.fillStyle = '#e91e63';
+                ctx.font = '10px monospace';
+                ctx.fillText('DETECTING', entityX, 105);
+
+                // Overlay Text: REC status, Name, Date
+                ctx.fillStyle = '#fff';
+                ctx.font = '11px monospace';
+                ctx.fillText('CCTV FEED // LIVE', 15, 25);
+                ctx.fillText(new Date().toISOString().replace('T', ' ').substring(0, 19), 15, canvas.height - 15);
+                ctx.fillText(cam.label, canvas.width - 160, 25);
+
+                requestAnimationFrame(render);
+            }
+            render();
+        });
+    });
+</script>
+
+<!-- Mobile Stream QR Modal -->
+<div class="modal fade" id="mobileStreamModal" tabindex="-1" role="dialog" aria-labelledby="mobileStreamModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content" style="background: #1a1a24; color: #fff; border: 1px solid var(--border-glass);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-glass);">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="mobileStreamModalLabel" style="font-weight: bold;">Cast to Mobile</h4>
+            </div>
+            <div class="modal-body text-center" style="padding: 20px;">
+                <p style="font-size: 12px; color: var(--text-secondary);" id="qrModalSub">Scan this QR code from your phone to open the stream live.</p>
+                <div id="qrCodeContainer" style="background: white; padding: 15px; border-radius: 8px; display: inline-block; margin: 15px 0;">
+                    <img id="qrCodeImage" src="" alt="CCTV QR Code" style="width: 150px; height: 150px;">
+                </div>
+                <h5 id="qrCamLabel" style="font-weight: bold; margin-top: 10px; color: var(--accent-cyan);">CAM 01</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gate Scanner Modal Mock -->
+<div class="modal fade" id="gateScannerModal" tabindex="-1" role="dialog" aria-labelledby="gateScannerModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background: #1a1a24; color: #fff; border: 1px solid var(--border-glass);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-glass);">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff;"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="gateScannerModalLabel" style="font-weight: bold;"><i class="fas fa-qrcode"></i> Scan Visitor QR Pass</h4>
+            </div>
+            <div class="modal-body text-center" style="padding: 30px 20px;">
+                <div class="cctv-stream-container center" style="width: 100%; max-width: 350px; height: 220px; background: #111; margin: 0 auto 20px; border: 2px solid var(--border-glass); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-expand animate-pulse" style="font-size: 5rem; color: #4caf50; opacity: 0.5;"></i>
+                </div>
+                <form action="/guard/visitor/verify-qr" method="POST" class="form-inline">
+                    <div class="form-group" style="margin-right: 10px; margin-bottom: 0;">
+                        <input type="text" name="qrPassCode" class="form-control text-center" placeholder="ENTER QR PASS CODE" style="font-weight: bold; font-size: 15px; width: 220px;" required>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Validate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openMobileStreamQR(camId, camLabel) {
+        const port = window.location.port ? ':' + window.location.port : '';
+        const url = window.location.protocol + '//' + window.location.hostname + port + '/cctv?cam=' + camId;
+        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(url);
+        
+        document.getElementById('qrCodeImage').src = qrUrl;
+        document.getElementById('qrCamLabel').innerText = camLabel;
+        $('#mobileStreamModal').modal('show');
+    }
+
+    function openGateScannerModal() {
+        $('#gateScannerModal').modal('show');
+    }
+</script>
+
+<%- include('partials/footer') %>

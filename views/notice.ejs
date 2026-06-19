@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 style="color: #ff9800;"><i class="fas fa-bullhorn"></i> Noticeboard Manager</h2>
+            <p class="text-muted">Draft announcements or use the AI notice generator to compose formal communications instantly.</p>
+            <hr style="border-color: var(--border-glass);">
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Manual Notice Creator -->
+        <div class="col-md-7">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-edit"></i> Draft Notice Announcement</h4></div>
+                <div class="panel-body">
+                    <form action="/notice" method="POST" id="noticeForm">
+                        <div class="form-group">
+                            <label for="noticeSubject">Subject Header:</label>
+                            <input name="subject" class="form-control" type="text" id="noticeSubject" placeholder="e.g. Schedule Maintenance Shutdown" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noticeDetails">Announcement Details:</label>
+                            <textarea name="details" class="form-control" rows="8" id="noticeDetails" placeholder="Type notice details here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Publish Notice</button>
+                        <a href="/noticeboard" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Notice Generator Panel -->
+        <div class="col-md-5">
+            <div class="panel panel-default" style="border-left: 4px solid var(--accent-cyan) !important;">
+                <div class="panel-heading"><h4><i class="fas fa-robot"></i> AI Notice Generator</h4></div>
+                <div class="panel-body">
+                    <p class="text-muted" style="font-size: 13px;">Type a short brief of the notice (e.g. <code>water shutdown tomorrow 10am-2pm</code>), and the AI will auto-write a professional bulletin.</p>
+                    
+                    <div class="form-group">
+                        <label>Brief Topic Notes:</label>
+                        <textarea id="aiPrompt" class="form-control" rows="3" placeholder="e.g. Water shutdown tomorrow from 10am to 2pm for pipe repairs in block B" required></textarea>
+                    </div>
+                    <button type="button" class="btn btn-info btn-block" onclick="generateNotice()"><i class="fas fa-wand-magic-sparkles"></i> Generate Professional Notice</button>
+                    
+                    <div id="aiGeneratingText" class="text-info text-center" style="display: none; margin-top: 15px;">
+                        <i class="fas fa-spinner fa-spin"></i> AI is composing the notice. Please wait...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-lightbulb"></i> Pro-Tip</h4></div>
+                <div class="panel-body" style="font-size: 13px; line-height: 1.5; color: var(--text-secondary);">
+                    Using professional wording builds trust with residents. Composing announcements via the AI tool ensures formal formatting, correct warning notices, and appropriate salutations automatically.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateNotice() {
+        const prompt = document.getElementById('aiPrompt').value.trim();
+        if (!prompt) {
+            alert('Please enter a brief note first.');
+            return;
+        }
+
+        const generatingText = document.getElementById('aiGeneratingText');
+        generatingText.style.display = 'block';
+
+        $.post('/notice/ai-generate', { prompt: prompt }, function(data) {
+            generatingText.style.display = 'none';
+            if (data.success) {
+                document.getElementById('noticeSubject').value = data.subject;
+                document.getElementById('noticeDetails').value = data.details;
+            } else {
+                alert('AI Notice Generation failed. Please try again.');
+            }
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>

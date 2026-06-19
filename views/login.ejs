@@ -1,0 +1,67 @@
+<!-- Login page -->
+<%- include('partials/headerForm') %>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+          <div class="card card-signin my-5">
+            <div class="card-body">       
+              <div class="text-center" style="margin-bottom: 20px;">
+                <img src="/images/comunify_logo.png" alt="Comunify Logo" style="height: 60px; filter: drop-shadow(0 0 6px rgba(0, 188, 212, 0.35));">
+              </div>
+              <h5 class="card-title text-center" style="margin-top: 0; margin-bottom: 20px;">Login</h5>
+              <form class="form-signin" action="/login" method="POST">
+                <div class="form-group mb-3">
+                  <select name="loginRole" id="loginRole" class="form-control" required style="height: 50px; border-radius: 2rem; padding: 0 1.5rem; font-size: 14px; border: 1px solid #ced4da;">
+                    <option value="" disabled selected>Select Login Role</option>
+                    <option value="resident">Member / Resident</option>
+                    <option value="society_admin">Society AGM / Admin</option>
+                    <option value="security_guard">Security Guard</option>
+                    <option value="super_admin">Platform IT Admin</option>
+                  </select>
+                </div>
+                <div class="form-label-group">
+                  <input name="username" type="email" id="email" class="form-control" placeholder="Email" required>
+                  <label for="email">Email</label>
+                </div>
+                <div class="form-label-group">
+                  <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+                  <label for="inputPassword">Password</label>
+                </div>
+                <button class="btn btn-lg btn-dark btn-block text-uppercase" type="submit" style="font-size:15px;">Sign in</button>
+                <hr class="my-4">
+                
+                <div class="text-center mb-3">
+                  <h6 class="card-text mb-2">Don't have an account?</h6>
+                  <a href="/signup" class="btn btn-danger btn-block text-uppercase" style="font-size:15px;">Sign-up</a>
+                </div>
+
+                <div class="text-center mb-3" style="border-top: 1px dashed #ced4da; padding-top: 15px;">
+                  <span class="text-muted" style="font-size:12px;">Or access the system as a demo resident:</span>
+                  <br>
+                  <button id="quickLoginBtn" class="btn btn-sm btn-dark text-uppercase"
+                    title="Quick demo access" onclick="quickDemoLogin()" type="button" style="margin-top: 8px; font-size:11px; padding: 6px 16px; border-radius: 5rem; width: 100%;">
+                    <i class="fas fa-bolt"></i> Demo Resident Access (Rajesh)
+                  </button>
+                </div>
+
+                <a href="/" class="btn btn-secondary btn-block text-uppercase">Home</a>
+                <p class="text-center text-muted" style="font-size: 12px; margin-top: 15px; color: var(--text-secondary) !important;">Developers By- quisoft.in</p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>  
+    <script>
+      function quickDemoLogin() {
+        document.getElementById('loginRole').value = 'resident';
+        document.getElementById('email').value = 'quisoft.in+resident@gmail.com';
+        document.getElementById('inputPassword').value = 'demo';
+        document.querySelector('.form-signin').submit();
+      }
+    </script>
+  </body>
+
+</html>

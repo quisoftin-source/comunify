@@ -1,0 +1,83 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <!-- Configured Helpdesk Team Info Banner -->
+    <div class="panel panel-default" style="border-left: 4px solid #e91e63 !important; background: rgba(233, 30, 99, 0.05); margin-bottom: 25px;">
+        <div class="panel-body">
+            <h4 style="margin: 0; font-weight: bold; color: #fff;">
+                <i class="fas fa-info-circle" style="color: #e91e63;"></i> 
+                Direct Assistance: Contact <%= society.helpdeskName || 'Resident Care Desk' %> at <strong style="color: var(--accent-cyan);"><%= society.helpdeskPhone || '080-12345678' %></strong>
+            </h4>
+        </div>
+    </div>
+
+    <!-- Title -->
+    <div class="row">
+        <div class="col-sm-8">
+            <h2 style="color: #e91e63; margin-top: 5px;"><i class="fas fa-headset"></i> Society Helpdesk Center</h2>
+            <p class="text-muted">Raise personal or community maintenance tickets, assign priorities, and track resolutions.</p>
+        </div>
+        <div class="col-sm-4 text-right">
+            <a href="/complaint" class="btn btn-danger" style="margin-top: 5px;">
+                <i class="fas fa-plus-circle"></i> File Support Ticket
+            </a>
+        </div>
+    </div>
+
+    <hr style="border-color: var(--border-glass);">
+
+    <!-- Tickets Listing -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-list-ul"></i> Support Tickets History</h4></div>
+                <div class="panel-body">
+                    <% if (complaints && complaints.length > 0 && complaints[0].category !== 'You have not raised any complaint') { %>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Date Raised</th>
+                                        <th>Scope Type</th>
+                                        <th>Department Category</th>
+                                        <th>Description</th>
+                                        <th>Assigned Staff</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% complaints.reverse().forEach(function(ticket, index) { %>
+                                        <tr>
+                                            <td><%= ticket.date %></td>
+                                            <td>
+                                                <span class="label <%= ticket.type === 'Personal' ? 'label-info' : 'label-warning' %>"><%= ticket.type %></span>
+                                            </td>
+                                            <td><strong><%= ticket.category %></strong></td>
+                                            <td><%= ticket.description %></td>
+                                            <td>
+                                                <%= ticket.assignedStaff || 'Awaiting assignment' %>
+                                            </td>
+                                            <td>
+                                                <span class="label <%= ticket.status === 'open' ? 'label-danger' : ticket.status === 'in-progress' ? 'label-warning' : 'label-success' %>">
+                                                    <%= ticket.status.toUpperCase() %>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center" style="padding: 40px 0;">
+                            <i class="fas fa-clipboard-check" style="font-size: 5rem; color: var(--text-secondary); opacity: 0.3; margin-bottom: 15px;"></i>
+                            <p class="text-muted">You have not raised any personal or community complaints yet.</p>
+                            <p class="text-muted"><small>Raise a ticket above if you require society maintenance assistance.</small></p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

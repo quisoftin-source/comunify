@@ -1,0 +1,314 @@
+<%- include('partials/header') %>
+
+<div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <!-- Welcome Header Card -->
+    <div class="row">
+        <div class="col-md-12" style="margin-bottom: 25px;">
+            <div class="panel panel-default" style="border-left: 5px solid var(--accent-cyan) !important;">
+                <div class="panel-body">
+                    <h3 style="margin-top: 5px; color: #fff;">
+                        Welcome back, <%= user.firstName %>!
+                    </h3>
+                    <p class="text-muted" style="margin-bottom: 0;">
+                        Flat: <strong><%= user.flatNumber || 'Gate desk' %></strong> | 
+                        Society: <strong><%= user.societyName %></strong> | 
+                        System Role: <span class="badge badge-role <%= user.role === 'super_admin' ? 'badge-super' : user.role === 'society_admin' ? 'badge-admin' : 'badge-resident' %>"><%= user.role.replace('_', ' ') %></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active SOS Broadcast Alert Overlay -->
+    <div class="row" id="activeSosPanel" style="display: none; margin-bottom: 25px;">
+        <div class="col-md-12">
+            <div class="panel panel-danger pulse-sos" style="background: rgba(233, 30, 99, 0.2) !important; border: 2px solid crimson !important; border-radius: 12px;">
+                <div class="panel-body text-center">
+                    <h3 style="color: #e91e63; font-weight: bold; margin-top: 5px;"><i class="fas fa-exclamation-triangle"></i> EMERGENCY SOS ALARM TRIPPED!</h3>
+                    <p id="sosMessageDetails" style="font-size: 15px; color: #fff;">Emergency triggered at Main Gate desk. Security guards are dispatched.</p>
+                    <button class="btn btn-danger btn-xs" onclick="acknowledgeSosAlert()"><i class="fas fa-check"></i> Acknowledge / Clear Alert</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="row text-center" style="margin-bottom: 30px;">
+        <% if (user.role === 'society_admin' || user.role === 'committee_member') { %>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/residents'" style="cursor: pointer;">
+                    <i class="fas fa-users" style="color: #ff9800;"></i>
+                    <h3 id="statTotalResidents">--</h3>
+                    <p>Total Residents</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/admin'" style="cursor: pointer;">
+                    <i class="fas fa-user-clock" style="color: #00bcd4;"></i>
+                    <h3 id="statPendingApprovals">--</h3>
+                    <p>Pending Approvals</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/helpdesk'" style="cursor: pointer;">
+                    <i class="fas fa-exclamation-circle" style="color: #e91e63;"></i>
+                    <h3 id="statOpenComplaints">--</h3>
+                    <p>Open Complaints</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/bill'" style="cursor: pointer;">
+                    <i class="fas fa-money-bill-wave" style="color: #4caf50;"></i>
+                    <h3 id="statTotalDues">--</h3>
+                    <p>Total Outstanding Bills</p>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/bill'" style="cursor: pointer;">
+                    <i class="fas fa-wallet" style="color: #4caf50;"></i>
+                    <h3 id="statPendingBill"><%= formatINR(user.makePayment) %></h3>
+                    <p>Pending Maintenance</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/helpdesk'" style="cursor: pointer;">
+                    <i class="fas fa-clipboard-list" style="color: #00bcd4;"></i>
+                    <h3 id="statUserComplaints">--</h3>
+                    <p>My Open Tickets</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/noticeboard'" style="cursor: pointer;">
+                    <i class="fas fa-bullhorn" style="color: #ff9800;"></i>
+                    <h3 id="statNoticeCount">--</h3>
+                    <p>Unread Notices</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-item" onclick="location.href='/cctv'" style="cursor: pointer;">
+                    <i class="fas fa-shield-alt" style="color: #e91e63;"></i>
+                    <h3 id="statCameraCount">--</h3>
+                    <p>Active CCTV Feeds</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Core Grid: Quick Links & Embedded AI Assistant -->
+    <div class="row">
+        <!-- Core modules deck -->
+        <div class="col-md-7">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4><i class="fas fa-th-large"></i> Platform Core Modules</h4></div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-4 zoom" onclick="location.href='/noticeboard'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-bullhorn" style="font-size: 3rem; color: #ff9800; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Noticeboard</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/bill'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-file-invoice-dollar" style="font-size: 3rem; color: #4caf50; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Billing Center</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/helpdesk'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-headset" style="font-size: 3rem; color: #e91e63; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Helpdesk</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/cctv'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-video" style="font-size: 3rem; color: #00bcd4; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">CCTV Live-View</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/documents'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-folder-open" style="font-size: 3rem; color: #ff5722; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Document Vault</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/amenities'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-calendar-check" style="font-size: 3rem; color: #9c27b0; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Amenity Book</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/voting'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-vote-yea" style="font-size: 3rem; color: #e040fb; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">E-Voting & Polls</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/marketplace'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-store" style="font-size: 3rem; color: #3f51b5; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Hub / Market</h4>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 zoom" onclick="location.href='/contacts'" style="cursor:pointer; margin-bottom:15px;">
+                            <div class="thumbnail text-center" style="padding: 15px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.01);">
+                                <i class="fas fa-phone-square-alt" style="font-size: 3rem; color: #8bc34a; margin-bottom: 8px;"></i>
+                                <h4 style="margin: 0; font-size:14px; font-weight:bold; color:#fff;">Emergency Contacts</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Chat Module -->
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-heading" style="display:flex; align-items:center; justify-content:space-between;">
+                    <strong style="color: #fff;"><i class="fas fa-robot"></i> AI Society Assistant</strong>
+                    <span class="label label-info">ONLINE</span>
+                </div>
+                <div class="panel-body" style="padding: 0 !important;">
+                    <div class="ai-chat-window">
+                        <div class="ai-chat-messages" id="aiChatMessages">
+                            <div class="chat-bubble bot">
+                                👋 Hello! I am your AI Society Assistant. How can I help you today?
+                                <br><br>
+                                <strong>Try asking:</strong>
+                                <ul style="margin: 5px 0 0 15px; padding: 0;">
+                                    <li><a href="#" onclick="askAssistant('What is my pending maintenance?')">What is my pending maintenance?</a></li>
+                                    <li><a href="#" onclick="askAssistant('Show my visitor history')">Show my visitor history</a></li>
+                                    <li><a href="#" onclick="askAssistant('When is the AGM?')">When is the AGM?</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="ai-chat-input-area">
+                            <input type="text" id="aiChatInput" class="form-control" placeholder="Ask AI Assistant..." style="flex:1;" onkeypress="checkAiEnter(event)">
+                            <button class="btn btn-primary btn-sm" onclick="sendAiMessage()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Notifications Simulator Panel (Premium Feature) -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default" style="border-top: 3px solid #25d366 !important;">
+                <div class="panel-heading" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4><i class="fab fa-whatsapp"></i> Real-time WhatsApp & SMS Simulator Console</h4>
+                    <span class="label label-success"><i class="fas fa-check-circle"></i> SMS GATEWAY ACTIVE</span>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted" style="font-size: 13px;">This log console shows live automated notifications (maintenance alerts, visitor entries, SOS triggers) that would be pushed to residents' phones.</p>
+                    <div id="whatsappLogConsole" style="background: #000; border-radius: 8px; font-family: monospace; color: #39ff14; padding: 15px; height: 180px; overflow-y: auto; font-size: 12px; border: 1px solid var(--border-glass);">
+                        <!-- Logs are inserted dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetch live dashboard metrics on load
+    $(document).ready(function() {
+        // Load statistics
+        $.get('/home/statistics', function(data) {
+            if (data.success) {
+                if ($('#statTotalResidents').length) $('#statTotalResidents').text(data.totalResidents);
+                if ($('#statPendingApprovals').length) $('#statPendingApprovals').text(data.pendingApprovals);
+                if ($('#statOpenComplaints').length) $('#statOpenComplaints').text(data.openComplaints);
+                if ($('#statTotalDues').length) $('#statTotalDues').text('₹ ' + new Intl.NumberFormat('en-IN').format(data.totalDues));
+                
+                if ($('#statUserComplaints').length) $('#statUserComplaints').text(data.myComplaints);
+                if ($('#statNoticeCount').length) $('#statNoticeCount').text(data.unreadNotices);
+                if ($('#statCameraCount').length) $('#statCameraCount').text(data.camerasCount);
+            }
+        });
+
+        // Load notifications log
+        $.get('/home/whatsapp-logs', function(data) {
+            if (data.success && data.logs) {
+                const consoleEl = document.getElementById('whatsappLogConsole');
+                data.logs.forEach(log => {
+                    logConsoleMessage(log);
+                });
+            }
+        });
+
+        // Check if an SOS is active
+        setInterval(function() {
+            $.get('/home/check-sos', function(data) {
+                if (data.activeSos) {
+                    $('#activeSosPanel').slideDown();
+                    $('#sosMessageDetails').html(`🚨 Alarm triggered by: <strong>${data.triggeredBy}</strong> at <strong>${new Date(data.timestamp).toLocaleTimeString()}</strong>. Emergency response is requested!`);
+                } else {
+                    $('#activeSosPanel').slideUp();
+                }
+            });
+        }, 3000);
+    });
+
+    function logConsoleMessage(log) {
+        const consoleEl = document.getElementById('whatsappLogConsole');
+        const timestamp = new Date(log.timestamp || Date.now()).toLocaleTimeString();
+        const line = `<div style="margin-bottom: 5px;"><span style="color:#888;">[${timestamp}]</span> <span style="color:#25d366;">[WhatsApp/SMS]</span> Sent to <strong>${log.recipient}</strong>: "${log.message}"</div>`;
+        consoleEl.insertAdjacentHTML('beforeend', line);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function checkAiEnter(event) {
+        if (event.key === 'Enter') {
+            sendAiMessage();
+        }
+    }
+
+    function askAssistant(text) {
+        document.getElementById('aiChatInput').value = text;
+        sendAiMessage();
+    }
+
+    function sendAiMessage() {
+        const input = document.getElementById('aiChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // Append user bubble
+        const messages = document.getElementById('aiChatMessages');
+        messages.insertAdjacentHTML('beforeend', `<div class="chat-bubble user">${text}</div>`);
+        messages.scrollTop = messages.scrollHeight;
+        input.value = '';
+
+        // Typing simulator
+        const botId = 'typing_' + Date.now();
+        messages.insertAdjacentHTML('beforeend', `<div class="chat-bubble bot" id="${botId}"><i class="fas fa-spinner fa-spin"></i> Thinking...</div>`);
+        messages.scrollTop = messages.scrollHeight;
+
+        // Post to server AI Assistant API
+        $.post('/home/ai-assistant', { query: text }, function(data) {
+            const typingBubble = document.getElementById(botId);
+            if (typingBubble) {
+                typingBubble.innerHTML = data.reply;
+            } else {
+                messages.insertAdjacentHTML('beforeend', `<div class="chat-bubble bot">${data.reply}</div>`);
+            }
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Check if AI triggered a WhatsApp log update
+            if (data.whatsappLog) {
+                logConsoleMessage(data.whatsappLog);
+            }
+        });
+    }
+
+    function acknowledgeSosAlert() {
+        $.post('/guard/sos/clear', {}, function() {
+            $('#activeSosPanel').slideUp();
+        });
+    }
+</script>
+
+<%- include('partials/footer') %>
