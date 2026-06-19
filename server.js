@@ -875,80 +875,106 @@ function registerRoutes() {
         }
     });
 
-    app.post("/residents/import", checkSocietyApproved, upload.single('excelFile'), async (req, res) => {
+    app.post("/residents/add", checkSocietyApproved, async (req, res) => {
         try {
             if (req.user.role !== 'society_admin') {
                 return res.status(403).send("Unauthorized");
             }
-            if (!req.file) {
-                return res.status(400).send("No file uploaded");
+
+            const { 
+                tower, 
+                hNo, 
+                name, 
+                phoneNumber, 
+                email, 
+                fatherName, 
+                occupancyType, 
+                kidsCount, 
+                ownerPhoneNumber, 
+                additionalInfo,
+                fourWheelerCount,
+                fourWheelerNumbers,
+                twoWheelerCount,
+                twoWheelerNumbers
+            } = req.body;
+
+            // 1. Mandatory validations
+            if (!tower || !hNo || !name || !phoneNumber || !email) {
+                return res.render("failure", {
+                    message: "Validation Error: Tower, H.No, Name, Contact, and Email are mandatory fields.",
+                    href: "/residents"
+                });
             }
 
-            const xlsx = require('xlsx');
-            const workbook = xlsx.readFile(req.file.path);
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            const data = xlsx.utils.sheet_to_json(worksheet);
+            // Split name into first and last name
+            const nameVal = name.trim();
+            const parts = nameVal.split(/\s+/);
+            let firstName = parts[0];
+            let lastName = parts.slice(1).join(' ') || 'Resident';
+
+            // Format Name (First letter Caps)
+            firstName = firstName.trim().charAt(0).toUpperCase() + firstName.trim().slice(1).toLowerCase();
+            lastName = lastName.trim().charAt(0).toUpperCase() + lastName.trim().slice(1).toLowerCase();
+
+            // Combined flat number
+            const flatNumber = `${tower.trim()} - ${hNo.trim()}`;
+
+            // Parse numbers safely
+            const parsedPhone = parseInt(phoneNumber.replace(/[^0-9]/g, '')) || 9999999999;
+            const parsedKids = parseInt(kidsCount) || 0;
+            const parsedOwnerPhone = occupancyType === 'renter' ? (parseInt(ownerPhoneNumber.replace(/[^0-9]/g, '')) || 0) : undefined;
+            const parsedFourWheelerCount = parseInt(fourWheelerCount) || 0;
+            const parsedTwoWheelerCount = parseInt(twoWheelerCount) || 0;
 
             const User = user_collection.User;
 
-            for (const row of data) {
-                // Map columns cleanly: support case-insensitive keys
-                const nameVal = row.Name || row.name || '';
-                let firstName = row['First Name'] || row.firstName || '';
-                let lastName = row['Last Name'] || row.lastName || '';
-                if (!firstName && nameVal) {
-                    const parts = nameVal.trim().split(/\s+/);
-                    firstName = parts[0];
-                    lastName = parts.slice(1).join(' ') || 'Resident';
-                }
-                if (!firstName) firstName = 'New';
-                if (!lastName) lastName = 'Resident';
-
-                // Format Name (First letter Caps)
-                firstName = firstName.trim().charAt(0).toUpperCase() + firstName.trim().slice(1).toLowerCase();
-                lastName = lastName.trim().charAt(0).toUpperCase() + lastName.trim().slice(1).toLowerCase();
-
-                const phoneNumber = parseInt(row['Contact'] || row['Phone'] || row['phoneNumber'] || 9999999999);
-                const fatherName = row['Father Name'] || row['fatherName'] || '';
-                const flatNumber = row['House Number'] || row['Flat Number'] || row['flatNumber'] || 'TBD';
-                const occupancyType = (String(row['Owner or Renter'] || row['Occupancy'] || row['occupancyType'] || 'owner')).toLowerCase().includes('rent') ? 'renter' : 'owner';
-                const kidsCount = parseInt(row['Kids Count'] || row['kidsCount'] || 0);
-                const ownerPhoneNumber = parseInt(row['Owner Contact'] || row['ownerPhoneNumber'] || 0);
-                const additionalInfo = row['Additional Info'] || row['additionalInfo'] || '';
-                const email = row['Email'] || row['email'] || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
-                const password = String(row['Password'] || row['password'] || 'demo');
-
-                // Check if user exists
-                const userExists = await User.findOne({ username: email });
-                if (!userExists) {
-                    await User.register({
-                        username: email,
-                        firstName,
-                        lastName,
-                        phoneNumber,
-                        fatherName,
-                        societyName: req.user.societyName,
-                        flatNumber,
-                        occupancyType,
-                        kidsCount,
-                        ownerPhoneNumber: occupancyType === 'renter' ? ownerPhoneNumber : undefined,
-                        additionalInfo,
-                        role: 'owner',
-                        validation: 'approved' // Admin imported users are pre-approved
-                    }, password);
-                }
+            // Check if user exists
+            const userExists = await User.findOne({ username: email.trim().toLowerCase() });
+            if (userExists) {
+                return res.render("failure", {
+                    message: `Onboarding failed: A resident with email '${email}' is already registered.`,
+                    href: "/residents"
+                });
             }
 
-            // Cleanup the uploaded temp file
-            if (fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
-            }
+            // Register the user
+            await User.register({
+                username: email.trim().toLowerCase(),
+                firstName,
+                lastName,
+                phoneNumber: parsedPhone,
+                fatherName: fatherName ? fatherName.trim() : '',
+                societyName: req.user.societyName,
+                flatNumber,
+                occupancyType: occupancyType === 'renter' ? 'renter' : 'owner',
+                kidsCount: parsedKids,
+                ownerPhoneNumber: parsedOwnerPhone,
+                additionalInfo: additionalInfo ? additionalInfo.trim() : '',
+                role: 'owner',
+                validation: 'approved', // Onboarded users are pre-approved by AGM
+                fourWheelerCount: parsedFourWheelerCount,
+                fourWheelerNumbers: fourWheelerNumbers ? fourWheelerNumbers.trim() : '',
+                twoWheelerCount: parsedTwoWheelerCount,
+                twoWheelerNumbers: twoWheelerNumbers ? twoWheelerNumbers.trim() : ''
+            }, 'demo'); // Default demo password
+
+            // Write Audit Log
+            const AuditLog = tenantDb.getTenantModel(req.user.societyName, 'AuditLog');
+            await AuditLog.create({
+                userEmail: req.user.username,
+                userName: req.user.firstName + ' ' + req.user.lastName,
+                role: req.user.role,
+                action: 'Onboard Resident',
+                details: `Individually onboarded resident ${firstName} ${lastName} for unit ${flatNumber}`
+            });
 
             res.redirect("/residents");
-        } catch(err) {
-            console.error("Excel import error:", err);
-            res.status(500).send("Import failed: " + err.message);
+        } catch (err) {
+            console.error("Resident onboarding error:", err);
+            res.render("failure", {
+                message: "Resident onboarding failed: " + err.message,
+                href: "/residents"
+            });
         }
     });
 

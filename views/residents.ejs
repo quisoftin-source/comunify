@@ -21,18 +21,98 @@
   <% } %>
   <% if(isAdmin) { %>
     <div style="max-width:1000px; margin:auto; margin-bottom: 25px; padding:20px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 1rem;">
-      <h4 style="color: #ff9800; font-weight: bold; margin-bottom: 15px;"><i class="fas fa-file-excel"></i> Bulk Import Residents</h4>
-      <form action="/residents/import" method="POST" enctype="multipart/form-data" class="form-inline" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <input type="file" name="excelFile" accept=".xlsx,.xls,.csv" class="form-control" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass); padding: 5px; height: auto;">
+      <h4 style="color: #ff9800; font-weight: bold; margin-bottom: 15px;"><i class="fas fa-robot"></i> Interactive Resident Onboarding Assistant</h4>
+      <p class="text-muted" style="font-size: 13px;">Onboard a new resident into the society registry. All inputs will be validated dynamically before save.</p>
+      
+      <form action="/residents/add" method="POST" id="onboardingForm" style="margin-top: 15px;">
+        <div class="row">
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Tower (Building Block/Phase)*</label>
+            <input type="text" name="tower" class="form-control" placeholder="e.g. Block A" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">H.No (Flat/Unit number)*</label>
+            <input type="text" name="hNo" class="form-control" placeholder="e.g. 402" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Name (Resident's Full Name)*</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Rajesh Kumar" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
         </div>
-        <button type="submit" class="btn btn-warning"><i class="fas fa-upload"></i> Upload Spreadsheet</button>
-        <span class="text-muted" style="font-size: 12px; max-width: 450px;">
-          Upload resident registry in <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> format. 
-          Spreadsheet must include columns: <code>Name</code> (or <code>First Name</code>, <code>Last Name</code>), <code>Contact</code>, <code>House Number</code>, <code>Email</code>. 
-          Optional columns: <code>Father Name</code>, <code>Occupancy</code> (Owner/Renter), <code>Kids Count</code>, <code>Owner Contact</code>, <code>Additional Info</code>.
-        </span>
+
+        <div class="row">
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Contact Number*</label>
+            <input type="tel" name="phoneNumber" class="form-control" placeholder="e.g. +919876543210" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Email Address*</label>
+            <input type="email" name="email" class="form-control" placeholder="e.g. rajesh@email.com" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Father Name / Guardian</label>
+            <input type="text" name="fatherName" class="form-control" placeholder="e.g. Ramesh Kumar" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Occupancy Status*</label>
+            <select name="occupancyType" class="form-control" id="occupancyType" required style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass); height: auto; padding: 6px 12px;">
+              <option value="owner" style="background: #222;">Owner</option>
+              <option value="renter" style="background: #222;">Renter</option>
+            </select>
+          </div>
+          <div class="col-sm-4 form-group">
+            <label style="color: #fff; font-weight: 500;">Kids Count</label>
+            <input type="number" name="kidsCount" class="form-control" min="0" value="0" placeholder="0" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-4 form-group" id="ownerContactGroup" style="display: none;">
+            <label style="color: #fff; font-weight: 500;">Owner Contact (Required if Renter)*</label>
+            <input type="tel" name="ownerPhoneNumber" id="ownerPhoneNumber" class="form-control" placeholder="e.g. +919123456789" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-3 form-group">
+            <label style="color: #fff; font-weight: 500;">4 Wheeler Count</label>
+            <input type="number" name="fourWheelerCount" class="form-control" min="0" value="0" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-3 form-group">
+            <label style="color: #fff; font-weight: 500;">4 Wheeler Numbers</label>
+            <input type="text" name="fourWheelerNumbers" class="form-control" placeholder="e.g. KA-03-MM-5678" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-3 form-group">
+            <label style="color: #fff; font-weight: 500;">2 Wheeler Count</label>
+            <input type="number" name="twoWheelerCount" class="form-control" min="0" value="0" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+          <div class="col-sm-3 form-group">
+            <label style="color: #fff; font-weight: 500;">2 Wheeler Numbers</label>
+            <input type="text" name="twoWheelerNumbers" class="form-control" placeholder="e.g. KA-01-AB-1234" style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="color: #fff; font-weight: 500;">Supplementary Notes / Remarks</label>
+          <textarea name="additionalInfo" class="form-control" rows="2" placeholder="Any additional notes..." style="background: rgba(0,0,0,0.2); color: #fff; border: 1px solid var(--border-glass);"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-warning"><i class="fas fa-plus-circle"></i> Onboard Resident</button>
       </form>
+
+      <script>
+        document.getElementById('occupancyType').addEventListener('change', function() {
+          const group = document.getElementById('ownerContactGroup');
+          const input = document.getElementById('ownerPhoneNumber');
+          if (this.value === 'renter') {
+            group.style.display = 'block';
+            input.setAttribute('required', 'required');
+          } else {
+            group.style.display = 'none';
+            input.removeAttribute('required');
+          }
+        });
+      </script>
     </div>
   <% } %>
 
@@ -40,60 +120,69 @@
       Residents of <%= societyName %>
   </h2>
 
-  <div class="flex-container">
-    <% societyResidents.forEach((resident) => { %>
-      <div>
-        <ul class="list-group zoom" style="margin-bottom: 0;">
-          <li class="list-group-item" style="text-align: center; border-bottom: none; background: transparent !important;">
-            <div style="width: 70px; height: 70px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent-cyan); background: rgba(255,255,255,0.05); display: inline-flex; align-items: center; justify-content: center;">
-              <% if (resident.photoPath) { %>
-                <img src="<%= resident.photoPath %>" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
-              <% } else { %>
-                <i class="fas fa-user-circle" style="font-size: 5rem; color: #94a3b8;"></i>
-              <% } %>
-            </div>
-          </li>
-          <li class="list-group-item flat-number" style="font-weight: bold; text-align: center;">
-            <i class="fas fa-house-user"></i> Unit <%= resident.flatNumber %>
-          </li>
-          <li class="list-group-item flat-owner" style="font-weight: bold; text-align: center;">
-            <%= resident.firstName %> <%= resident.lastName %>
-          </li>
-          <li class="list-group-item" style="font-size: 13px; text-align: center;">
-            <span class="label <%= resident.occupancyType === 'renter' ? 'label-warning' : 'label-success' %>" style="text-transform: uppercase;">
-              <%= resident.occupancyType || 'owner' %>
-            </span>
-          </li>
-          <li class="list-group-item" style="font-size: 13px;">
-            <i class="fas fa-phone-square-alt" style="color: var(--accent-cyan);"></i> Contact: <strong><%= resident.phoneNumber %></strong>
-          </li>
-          <li class="list-group-item" style="font-size: 13px;">
-            <i class="fas fa-user-tie" style="color: var(--accent-cyan);"></i> Father: <strong><%= resident.fatherName || 'N/A' %></strong>
-          </li>
-          <li class="list-group-item" style="font-size: 13px;">
-            <i class="fas fa-child" style="color: var(--accent-cyan);"></i> Kids: <strong><%= resident.kidsCount || 0 %></strong>
-            <% if (resident.kidsNames && resident.kidsNames.length > 0) { %>
-              <span style="font-size: 11px; color: #a1a1a1; display: block; margin-top: 4px;">(<%= resident.kidsNames.join(', ') %>)</span>
-            <% } %>
-          </li>
-          <% if (resident.occupancyType === 'renter') { %>
-            <li class="list-group-item" style="font-size: 13px; background-color: rgba(255, 152, 0, 0.05) !important;">
-              <i class="fas fa-phone-alt" style="color: #ff9800;"></i> Owner Phone: <strong><%= resident.ownerPhoneNumber || 'N/A' %></strong>
-            </li>
-            <% if (resident.rentAgreementPath) { %>
-              <li class="list-group-item" style="padding: 5px 15px; border-top: none;">
-                <a href="<%= resident.rentAgreementPath %>" target="_blank" class="btn btn-danger btn-xs btn-block" style="text-align: center; border-radius: 4px; font-size: 11px !important;"><i class="fas fa-file-pdf"></i> View Agreement</a>
-              </li>
-            <% } %>
-          <% } %>
-          <% if (resident.additionalInfo) { %>
-            <li class="list-group-item" style="font-size: 11px; font-style: italic; color: #94a3b8;">
-              <i class="fas fa-info-circle"></i> <%= resident.additionalInfo %>
-            </li>
-          <% } %>
-        </ul>
-      </div>
-    <% }) %>
+  <div style="max-width:1000px; margin:auto; overflow-x:auto; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 1rem; padding: 15px; margin-bottom: 30px;">
+    <table class="table table-striped table-hover" style="color: #fff; margin-bottom: 0; min-width: 1200px;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--accent-cyan);">
+          <th style="color: var(--accent-cyan);">Tower</th>
+          <th style="color: var(--accent-cyan);">H.No</th>
+          <th style="color: var(--accent-cyan);">Name</th>
+          <th style="color: var(--accent-cyan);">Contact</th>
+          <th style="color: var(--accent-cyan);">Email</th>
+          <th style="color: var(--accent-cyan);">Father Name</th>
+          <th style="color: var(--accent-cyan);">Occupancy</th>
+          <th style="color: var(--accent-cyan);">Kids Count</th>
+          <th style="color: var(--accent-cyan);">4 Wheeler Count</th>
+          <th style="color: var(--accent-cyan);">4 Wheeler Numbers</th>
+          <th style="color: var(--accent-cyan);">2 Wheeler Count</th>
+          <th style="color: var(--accent-cyan);">2 Wheeler Numbers</th>
+          <th style="color: var(--accent-cyan);">Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (societyResidents && societyResidents.length > 0) { %>
+          <% societyResidents.forEach((resident) => { %>
+            <% 
+              let tower = 'Default';
+              let hNo = resident.flatNumber || 'TBD';
+              if (resident.flatNumber && resident.flatNumber.includes('-')) {
+                  const parts = resident.flatNumber.split('-');
+                  tower = parts[0].trim();
+                  hNo = parts.slice(1).join('-').trim();
+              }
+            %>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: transparent !important;">
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= tower %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= hNo %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05); font-weight: bold; color: #fff;"><%= resident.firstName %> <%= resident.lastName %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.phoneNumber %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.username %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fatherName || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);">
+                <span class="label <%= resident.occupancyType === 'renter' ? 'label-warning' : 'label-success' %>" style="text-transform: uppercase; font-size: 11px;">
+                  <%= resident.occupancyType || 'owner' %>
+                </span>
+              </td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.kidsCount || 0 %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerCount || 0 %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerNumbers || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerCount || 0 %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerNumbers || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; max-width: 250px; word-wrap: break-word; color: #cbd5e1;">
+                <% if (resident.occupancyType === 'renter' && resident.ownerPhoneNumber) { %>
+                  <strong>Owner Contact:</strong> +<%= resident.ownerPhoneNumber %><br>
+                <% } %>
+                <%= resident.additionalInfo || '' %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="13" class="text-center text-muted" style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.05);">No registered residents in the database.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
   </div>
 </div>
 

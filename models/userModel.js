@@ -84,6 +84,22 @@ const userSchema = new mongoose.Schema (
 		},
 		rentAgreementPath: {
 			type: String
+		},
+		fourWheelerCount: {
+			type: Number,
+			default: 0
+		},
+		fourWheelerNumbers: {
+			type: String,
+			default: ''
+		},
+		twoWheelerCount: {
+			type: Number,
+			default: 0
+		},
+		twoWheelerNumbers: {
+			type: String,
+			default: ''
 		}
 	},
 	{
