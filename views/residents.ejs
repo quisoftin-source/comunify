@@ -8,11 +8,16 @@
       </div>
       <form action="/approveResident" method="POST">
         <% appliedResidents.forEach(user => { %>
-          <div style="max-width:500px; text-align:center; margin:auto; display:block; padding:10px 10%;background-color:whitesmoke; border-radius:0.5rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.01); margin-bottom: 10px;">
-            <p><%= user.firstName %> <%= user.lastName %> - <%= user.flatNumber %></p>
-            <div>
-              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-success btn-sm" type="submit" name=validate[<%= user._id %>] value="approved"><i class="fas fa-check-circle fa-2x"></i></button>
-              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-danger btn-sm" type="submit" name=validate[<%= user._id %>] value="declined"><i class="fas fa-times-circle fa-2x"></i></button>
+          <div style="max-width:500px; text-align:left; margin:auto; display:block; padding:15px; background-color:whitesmoke; border-radius:0.5rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.01); margin-bottom: 10px; color: #333;">
+            <p><strong>Request ID:</strong> <%= user.RequestID %></p>
+            <p><strong>Requestor Name:</strong> <%= user.RequestorName %></p>
+            <p><strong>Unit Details:</strong> <%= user.UnitDetails %></p>
+            <p><strong>Contact Number:</strong> <%= user.ContactNumber %></p>
+            <p><strong>Occupancy Status:</strong> <%= user.OccupancyStatus %></p>
+            <p><strong>Verification Status:</strong> <span class="label label-warning" style="font-size: 11px;"><%= user.VerificationStatus %></span></p>
+            <div style="text-align: center; margin-top: 10px;">
+              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-success btn-sm" type="submit" name="validate[<%= user._id %>]" value="approved"><i class="fas fa-check-circle"></i> Approve</button>
+              <button style="margin-top: 0; border-radius: 15px;" class="btn btn-danger btn-sm" type="submit" name="validate[<%= user._id %>]" value="declined"><i class="fas fa-times-circle"></i> Decline</button>
             </div>
           </div>
         <% }) %>
@@ -183,9 +188,9 @@
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.kidsCount || 0 %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= kidsNamesStr %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerCount || 0 %></td>
-              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.fourWheelerNumbers || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= (resident.fourWheelerNumbers || 'N/A').toUpperCase() %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerCount || 0 %></td>
-              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.twoWheelerNumbers || 'N/A' %></td>
+              <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= (resident.twoWheelerNumbers || 'N/A').toUpperCase() %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05);"><%= resident.bicycleCount || 0 %></td>
               <td style="border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; max-width: 250px; word-wrap: break-word; color: #cbd5e1;">
                 <% if (resident.occupancyType === 'renter' && resident.ownerPhoneNumber) { %>

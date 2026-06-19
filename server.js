@@ -860,10 +860,22 @@ function registerRoutes() {
                     foundAppliedUsers.push(user);
                   }
                 });
+
+                const formattedAppliedUsers = foundAppliedUsers.map(user => {
+                    return {
+                        RequestID: user._id.toString(),
+                        RequestorName: `${user.firstName} ${user.lastName}`,
+                        UnitDetails: user.flatNumber || 'TBD',
+                        ContactNumber: user.phoneNumber ? user.phoneNumber.toString() : 'N/A',
+                        OccupancyStatus: user.occupancyType ? (user.occupancyType.charAt(0).toUpperCase() + user.occupancyType.slice(1).toLowerCase()) : 'Owner',
+                        VerificationStatus: 'Pending_AGM_Approval',
+                        _id: user._id
+                    };
+                });
                 
                 res.render("residents", {
                     societyResidents: foundUsers,
-                    appliedResidents: foundAppliedUsers,
+                    appliedResidents: formattedAppliedUsers,
                     societyName: userSocietyName,
                     isAdmin: req.user.role === 'society_admin'
                 });
@@ -958,9 +970,9 @@ function registerRoutes() {
                 role: 'owner',
                 validation: 'approved', // Onboarded users are pre-approved by AGM
                 fourWheelerCount: parsedFourWheelerCount,
-                fourWheelerNumbers: fourWheelerNumbers ? fourWheelerNumbers.trim() : '',
+                fourWheelerNumbers: fourWheelerNumbers ? fourWheelerNumbers.trim().toUpperCase() : '',
                 twoWheelerCount: parsedTwoWheelerCount,
-                twoWheelerNumbers: twoWheelerNumbers ? twoWheelerNumbers.trim() : '',
+                twoWheelerNumbers: twoWheelerNumbers ? twoWheelerNumbers.trim().toUpperCase() : '',
                 bicycleCount: parsedBicycleCount
             }, 'demo'); // Default demo password
 
