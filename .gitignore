@@ -9,3 +9,6 @@ comunify@*
 password.txt
 NODE_ENV
 comunify@*
+password/
+password/*.txt
+password.txt
