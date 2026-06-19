@@ -1,5 +1,5 @@
 # Comunify Multi-Tenant Enterprise SaaS Platform
-**Developers By- quisoft.in**
+**Developers: quisoft.in**
 
 Comunify is a multi-tenant enterprise-grade Community Management Software-as-a-Service (SaaS) platform. It allows unlimited housing societies to onboard, configure custom billing schedules, monitor smart meters, manage gate visitors with QR pass verification, stream public CCTV feeds, coordinate e-voting resolutions, and interact with a resident AI Assistant.
 
@@ -93,4 +93,4 @@ This platform implements strict **logical database isolation** using dynamic Mon
 
 ---
 
-**Developers By- quisoft.in**
+**Developers: quisoft.in**
