@@ -5,7 +5,11 @@ const tenantConnections = {};
 function getTenantDb(societyName) {
     if (!societyName) return null;
     // Format the database name nicely
-    const dbName = 'society_' + societyName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    let dbName = 'soc_' + societyName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    // Truncate database name to 38 characters maximum for MongoDB Atlas compatibility
+    if (dbName.length > 38) {
+        dbName = dbName.substring(0, 38);
+    }
     if (tenantConnections[dbName]) {
         return tenantConnections[dbName];
     }
